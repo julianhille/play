@@ -1,3 +1,5 @@
 flask==0.10.1
 xkcdpass
+bcrypt
 eve==0.5.3
+pyyaml

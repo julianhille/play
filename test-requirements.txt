@@ -1,3 +1,4 @@
 mongomock==2.3.1
 pytest
-
+humongous
+webtest
