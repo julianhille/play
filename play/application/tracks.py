@@ -5,9 +5,7 @@ SCHEMA = {
     'public_item_methods': [],
     'item_methods': ['GET'],
     'resource_methods': ['GET'],
-    'allowed_roles': ['admin'],
-    'allowed_item_read_roles': ['admin', 'user'],
-    'allowed_item_write_roles': ['admin'],
+    'allowed_roles': ['user'],
     'schema': {
         'metadata': {
             'type': 'dict'
