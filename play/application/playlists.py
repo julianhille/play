@@ -27,7 +27,7 @@ SCHEMA = {
             #  'embeddable': True,
             'readonly': True
         },
-         'tracks': {
+        'tracks': {
             'type': 'list',
             'schema': {
                 'type': 'objectid'
