@@ -1,0 +1,62 @@
+[
+    {
+        "_id": {"$oid": "ccff1bee2e21e1560a7dd000"},
+        "name": "admin_user_active",
+        "password": "$2b$10$o2O2r7BZUJa/HX1lgeuHl.GT2f8IIPv0pGEZMizVIl8rnY/2JHJsq",
+        "active": true,
+        "roles": ["admin", "user"],
+        "last_login": {"$date": "2015-01-01T00:00:00.000"},
+        "_created_date": {"$date": "2015-05-01T00:00:00.000"},
+        "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
+    },
+    {
+        "_id": {"$oid": "ccff1bee2e21e1560a7dd001"},
+        "name": "admin_active",
+        "password": "$2b$10$o2O2r7BZUJa/HX1lgeuHl.GT2f8IIPv0pGEZMizVIl8rnY/2JHJsq",
+        "active": true,
+        "roles": ["admin"],
+        "last_login": {"$date": "2015-01-01T00:00:00.000"},
+        "_created_date": {"$date": "2015-05-01T00:00:00.000"},
+        "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
+    },
+    {
+        "_id": {"$oid": "ccff1bee2e21e1560a7dd002"},
+        "name": "admin_user_inactive",
+        "password": "$2b$10$o2O2r7BZUJa/HX1lgeuHl.GT2f8IIPv0pGEZMizVIl8rnY/2JHJsq",
+        "active": false,
+        "roles": ["admin", "user"],
+        "last_login": {"$date": "2015-01-01T00:00:00.000"},
+        "_created_date": {"$date": "2015-05-01T00:00:00.000"},
+        "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
+    },
+    {
+        "_id": {"$oid": "ccff1bee2e21e1560a7dd003"},
+        "name": "admin_inactive",
+        "password": "$2b$10$o2O2r7BZUJa/HX1lgeuHl.GT2f8IIPv0pGEZMizVIl8rnY/2JHJsq",
+        "active": false,
+        "roles": ["admin"],
+        "last_login": {"$date": "2015-01-01T00:00:00.000"},
+        "_created_date": {"$date": "2015-05-01T00:00:00.000"},
+        "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
+    },
+    {
+        "_id": {"$oid": "ccff1bee2e21e1560a7dd004"},
+        "name": "user_active",
+        "password": "$2b$10$o2O2r7BZUJa/HX1lgeuHl.GT2f8IIPv0pGEZMizVIl8rnY/2JHJsq",
+        "active": true,
+        "roles": ["user"],
+        "last_login": {"$date": "2015-01-01T00:00:00.000"},
+        "_created_date": {"$date": "2015-05-01T00:00:00.000"},
+        "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
+    },
+    {
+        "_id": {"$oid": "ccff1bee2e21e1560a7dd005"},
+        "name": "user_inactive",
+        "password": "$2b$10$o2O2r7BZUJa/HX1lgeuHl.GT2f8IIPv0pGEZMizVIl8rnY/2JHJsq",
+        "active": false,
+        "roles": ["user"],
+        "last_login": {"$date": "2015-01-01T00:00:00.000"},
+        "_created_date": {"$date": "2015-05-01T00:00:00.000"},
+        "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
+    }
+]

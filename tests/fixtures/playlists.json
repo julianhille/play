@@ -1,0 +1,22 @@
+[
+    {
+        "_id": {"$oid": "aaff1bee2e21e1560a7dd000"},
+        "tracks": [
+            {"$oid": "adf19b92e21e1560a7dd0000"}
+        ],
+        "owner": {"$oid": "ccff1bee2e21e1560a7dd004"},
+        "public": false,
+        "_created_date": {"$date": "2015-05-01T00:00:00.000"},
+        "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
+    },
+    {
+        "_id": {"$oid": "aaff1bee2e21e1560a7dd001"},
+        "tracks": [
+            {"$oid": "adf19b92e21e1560a7dd0000"}
+        ],
+        "owner": {"$oid": "ccff1bee2e21e1560a7dd004"},
+        "public": true,
+        "_created_date": {"$date": "2015-05-01T00:00:00.000"},
+        "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
+    }
+]
