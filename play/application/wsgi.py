@@ -1,5 +1,5 @@
 from play.application.application import Application
-from play.application import tracks, playlists
+from play.application import albums, playlists, tracks
 
 settings = {
     'DOMAIN': {
@@ -9,8 +9,9 @@ settings = {
 
 def application():
     app = Application(settings=settings)
-    app.register_blueprint(tracks.blueprint)
+    app.register_blueprint(albums.blueprint)
     app.register_blueprint(playlists.blueprint)
+    app.register_blueprint(tracks.blueprint)
     return app.instantiate()
 
 

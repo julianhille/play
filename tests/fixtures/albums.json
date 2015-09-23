@@ -9,6 +9,7 @@
     "links": ["http://mdb.com/album/123"],
     "media": ["http://mdb.com/album/123"],
     "year": 2012,
+    "length": 300,
     "_created_date": {"$date": "2015-05-01T00:00:00.000"},
     "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
   }

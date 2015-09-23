@@ -16,17 +16,23 @@ SCHEMA = {
             'maxlength': 30,
             'required': True
         },
-        'metadata': {
-            'type': 'dict'
-        },
         'length': {
             'type': 'integer'
+        },
+        'metadata': {
+            'type': 'dict'
         },
         'owner': {
             'type': 'objectid',
             #  'embeddable': True,
             'readonly': True
-        }
+        },
+         'tracks': {
+            'type': 'list',
+            'schema': {
+                'type': 'objectid'
+            }
+        },
     }
 }
 
