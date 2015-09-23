@@ -13,11 +13,11 @@ class Application(object):
 
     def instantiate(self, *args, **kwargs):
         app = Eve(settings=self.settings, auth=RolesAuth)
-
         for blueprint in self._blueprints:
             for event, function in blueprint.events.__dict__.items():
                 if event.startswith('on_'):
                     setattr(app, '{}_{}'.format(event, blueprint.name), function)
+            app.register_blueprint(blueprint)
         return app
 
     def register_blueprint(self, blueprint):
