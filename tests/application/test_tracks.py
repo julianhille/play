@@ -26,7 +26,7 @@ def test_get_resource_user(testapp):
 
 def test_get_item_user(testapp):
     with auth(testapp, user='user_active'):
-        response = testapp.get('/tracks')
+        response = testapp.get('/tracks/adf19b92e21e1560a7dd0000')
     assert response.status_code == 200
 
 
