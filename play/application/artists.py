@@ -7,7 +7,7 @@ SCHEMA = {
     'resource_methods': ['GET'],
     'allowed_roles': ['user'],
     'schema': {
-        'gerne': {
+        'genre': {
             'type': 'list',
             'schema': {
                 'type': 'string'
