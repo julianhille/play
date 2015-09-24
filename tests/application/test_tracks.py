@@ -40,14 +40,14 @@ def test_post_item_user(testapp):
 def test_put_item_user(testapp):
     with auth(testapp, user='user_active'):
         with raises(AppError) as context:
-            testapp.put_json('/tracks', {})
+            testapp.put_json('/tracks/adf19b92e21e1560a7dd0000', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 
 def test_patch_item_user(testapp):
     with auth(testapp, user='user_active'):
         with raises(AppError) as context:
-            testapp.patch_json('/tracks', {})
+            testapp.patch_json('/tracks/adf19b92e21e1560a7dd0000', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 

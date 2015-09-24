@@ -38,14 +38,14 @@ def test_post_item_user(testapp):
 def test_put_item_user(testapp):
     with auth(testapp, user='user_active'):
         with raises(AppError) as context:
-            testapp.put_json('/artists', {})
+            testapp.put_json('/artists/acb419b92e21e1560a7dd000', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 
 def test_patch_item_user(testapp):
     with auth(testapp, user='user_active'):
         with raises(AppError) as context:
-            testapp.patch_json('/artists', {})
+            testapp.patch_json('/artists/acb419b92e21e1560a7dd000', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 
@@ -57,11 +57,11 @@ def test_post_item_no_auth(testapp):
 
 def test_put_item_no_auth(testapp):
     with raises(AppError) as context:
-        testapp.put_json('/artists', {})
+        testapp.put_json('/artists/acb419b92e21e1560a7dd000', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 
 def test_patch_item_no_auth(testapp):
     with raises(AppError) as context:
-        testapp.patch_json('/artists', {})
+        testapp.patch_json('/artists/acb419b92e21e1560a7dd000', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)

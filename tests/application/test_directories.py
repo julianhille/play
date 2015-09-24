@@ -53,30 +53,30 @@ def test_post_item_user(testapp):
 def test_put_item_user(testapp):
     with auth(testapp, user='user_active'):
         with raises(AppError) as context:
-            testapp.put_json('/directories', {})
+            testapp.put_json('/directories/ddff19b92e21e1560a7dd001', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 
 def test_patch_item_user(testapp):
     with auth(testapp, user='user_active'):
         with raises(AppError) as context:
-            testapp.patch_json('/directories', {})
+            testapp.patch_json('/directories/ddff19b92e21e1560a7dd001', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 
 def test_post_item_no_auth(testapp):
     with raises(AppError) as context:
-        testapp.post_json('/directories', {})
+        testapp.post_json('/directories/ddff19b92e21e1560a7dd001', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 
 def test_put_item_no_auth(testapp):
     with raises(AppError) as context:
-        testapp.put_json('/directories', {})
+        testapp.put_json('/directories/ddff19b92e21e1560a7dd001', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 
 def test_patch_item_no_auth(testapp):
     with raises(AppError) as context:
-        testapp.patch_json('/directories', {})
+        testapp.patch_json('/directories/ddff19b92e21e1560a7dd001', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
