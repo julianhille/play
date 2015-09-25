@@ -1,5 +1,4 @@
 from contextlib import contextmanager
-from functools import partial
 import pytest
 from unittest.mock import patch, Mock
 from webtest import TestApp
@@ -8,11 +7,11 @@ from play.application.wsgi import application
 
 
 def app_factory():
-    return application()
+    return application
 
 
 @pytest.fixture(autouse=True)
-def testapp(request, humongous):
+def testapp_api(request, humongous):
     factory = app_factory
     marker = request.node.get_marker('app_factory')
     if marker:
@@ -24,12 +23,12 @@ def testapp(request, humongous):
 
 
 @contextmanager
-def auth(testapp, user, roles=None):
+def auth(testapp_api, user, roles=None):
 
-    def check_auth(username, password, allowed_roles, resource, method, testapp):
-        testapp.app.user = testapp.app.data.driver.db.users.find_one({'name': user})
+    def check_auth(username, password, allowed_roles, resource, method):
+        testapp_api.app.user = testapp_api.app.data.driver.db.users.find_one({'name': user})
         return True
 
-    testapp.authorization = ('Basic', ('user', 'password'))
-    with patch.object(testapp.app.auth, 'check_auth', partial(check_auth, testapp=testapp)):
+    testapp_api.authorization = ('Basic', ('user', 'password'))
+    with patch.object(testapp_api.app.auth, 'check_auth', check_auth):
         yield

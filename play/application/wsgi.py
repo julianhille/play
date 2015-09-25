@@ -7,7 +7,7 @@ settings = {
 }
 
 
-def application():
+def _application():
     app = Application(settings=settings)
     app.register_blueprint(albums.blueprint)
     app.register_blueprint(artists.blueprint)
@@ -15,8 +15,11 @@ def application():
     app.register_blueprint(playlists.blueprint)
     app.register_blueprint(tracks.blueprint)
     app.register_blueprint(users.blueprint)
-    return app.instantiate()
+    app = app.instantiate(static_url_path='/static')
+    return app
 
+
+application = _application()
 
 if __name__ == '__main__':
-    application().run(debug=True)
+    application.run(debug=True)
