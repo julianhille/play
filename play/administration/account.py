@@ -23,4 +23,4 @@ def login():
 @blueprint.route('/logout', methods=['GET'])
 def logout():
     logout_user()
-    return redirect(url_for('account.login')) # TODO(add home)
+    return redirect(url_for('account.login'))  # TODO(add home)

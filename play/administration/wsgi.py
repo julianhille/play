@@ -1,6 +1,6 @@
 from flask import Flask, render_template, current_app
 from flask.ext.pymongo import PyMongo
-from flask.ext.login import LoginManager, login_required, UserMixin
+from flask.ext.login import LoginManager, login_required
 
 from play.administration import account
 from play.models.users import LoginUser
@@ -8,6 +8,7 @@ from play.models.users import LoginUser
 
 def _user_loader(user_id):
     return LoginUser.get(current_app.mongo.db.users, user_id)
+
 
 def create_app():
     app = Flask(__name__)
@@ -35,8 +36,6 @@ application = create_app()
 @login_required
 def home():
     return render_template('index.html')
-
-
 
 
 if __name__ == '__main__':
