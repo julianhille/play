@@ -35,7 +35,6 @@ def stream(track_id):
 
     try:
         with open(track['file'], "rb") as fp:
-            print(fp, open)
             return send_file(fp, mimetype='audio/mpeg',
                              attachment_filename=str(track_id))
     except IOError:

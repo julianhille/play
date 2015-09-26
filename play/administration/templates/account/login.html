@@ -1,0 +1,14 @@
+<form method="POST" action="{{ url_for('.login') }}">
+    {{ form.csrf_token }}
+    <div>{{ form.username.label }}: {{ form.username(class="") }}</div>
+    {% if form.username.errors %}
+        <ul class="errors">{% for error in form.username.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div>{{ form.password.label }}: {{ form.password(class="") }}</div>
+    {% if form.password.errors %}
+        <ul class="errors">{% for error in form.password.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+    {% endif %}
+    <div>{{ form.remember.label }}: {{ form.remember(class="") }}</div>
+    <button type="submit" value="submit" />
+</form>

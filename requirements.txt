@@ -3,3 +3,8 @@ xkcdpass
 bcrypt
 eve==0.5.3
 pyyaml
+scandir
+celery
+flask-login
+flask-pymongo
+flask-wtf

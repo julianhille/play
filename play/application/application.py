@@ -12,7 +12,7 @@ class Application(object):
         self._blueprints = []
 
     def instantiate(self, *args, **kwargs):
-        app = Eve(settings=self.settings, auth=RolesAuth)
+        app = Eve(settings=self.settings, auth=RolesAuth, **kwargs)
         for blueprint in self._blueprints:
             for event, function in blueprint.events.__dict__.items():
                 if event.startswith('on_'):
