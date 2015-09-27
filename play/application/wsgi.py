@@ -23,7 +23,7 @@ def create_app():
     app.register_blueprint(playlists.blueprint)
     app.register_blueprint(tracks.blueprint)
     app.register_blueprint(users.blueprint)
-    app = app.instantiate(static_url_path='/static')
+    app = app.instantiate()
 
     login = LoginManager()
     login.init_app(app)
@@ -34,4 +34,4 @@ def create_app():
 application = create_app()
 
 if __name__ == '__main__':
-    application.run(debug=True)
+    application.run(debug=True, port=8002)

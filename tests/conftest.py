@@ -8,6 +8,7 @@ from play.application.wsgi import application as api
 from play.administration.wsgi import application as admin
 from play.models.users import LoginUser
 
+
 def app_api_factory():
     return api
 
