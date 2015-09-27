@@ -1,5 +1,6 @@
 from play.application.blueprint import Blueprint
-from flask import current_app, abort
+from flask import abort
+from flask.ext.login import current_user
 
 
 SCHEMA = {
@@ -40,23 +41,24 @@ blueprint = Blueprint('playlists', __name__, SCHEMA)
 
 @blueprint.hook('on_pre_GET')
 def ensure_public_or_owner_on_get(request, lookup):
-    lookup['$or'] = [{'owner': current_app.user['_id']}, {'public': True}]
+    lookup['$or'] = [{'owner': current_user._id}, {'public': True}]
 
 
 @blueprint.hook('on_insert')
 def add_user_on_create(items):
     for item in items:
-        item['owner'] = current_app.user['_id']
+        item['owner'] = current_user._id
 
 
 @blueprint.hook('on_replace')
 def ensure_user_is_owner_on_replace(item, original):
-    if current_app.user['_id'] != original['owner']:
+    if current_user._id != original['owner']:
         abort(403)
-    item['owner'] = current_app.user['_id']
+    item['owner'] = current_user._id
 
 
 @blueprint.hook('on_update')
 def ensure_user_is_owner_on_update(updates, original):
-    if current_app.user['_id'] != original['owner']:
+    print('test')
+    if current_user._id != original['owner']:
         abort(403)

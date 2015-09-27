@@ -1,6 +1,6 @@
 from eve import Eve
 
-from play.application.auth import RolesAuth
+from play.application.auth import SessionAuth
 
 
 class Application(object):
@@ -12,7 +12,7 @@ class Application(object):
         self._blueprints = []
 
     def instantiate(self, *args, **kwargs):
-        app = Eve(settings=self.settings, auth=RolesAuth, **kwargs)
+        app = Eve(settings=self.settings, auth=SessionAuth, **kwargs)
         for blueprint in self._blueprints:
             for event, function in blueprint.events.__dict__.items():
                 if event.startswith('on_'):

@@ -36,7 +36,7 @@ def test_get_item_inactive_user(testapp_api):
     assert '404 NOT FOUND' in str(context.value)
 
 
-def test_get_item_acitve_user_missing_role(testapp_api):
+def test_get_item_active_user_missing_role(testapp_api):
     with auth(testapp_api, user='user_active'):
         with raises(AppError) as context:
             testapp_api.get('/users/ccff1bee2e21e1560a7dd001')

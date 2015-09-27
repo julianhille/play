@@ -66,7 +66,7 @@ def test_get_resource_user_is_owner(testapp_api):
 
 
 def test_get_resource_public_playlists(testapp_api):
-    with auth(testapp_api, user='admin_active'):
+    with auth(testapp_api, user='admin_user_active'):
         response = testapp_api.get('/playlists')
     assert response.status_code == 200
     items = [v['_id'] for v in response.json_body['_items']]
@@ -74,12 +74,12 @@ def test_get_resource_public_playlists(testapp_api):
 
 
 def test_post_item(testapp_api):
-    with auth(testapp_api, user='admin_active'):
+    with auth(testapp_api, user='admin_user_active'):
         response_post = testapp_api.post_json('/playlists', VALID_PLAYLIST)
         response_get = testapp_api.get('/' + response_post.json_body['_links']['self']['href'])
     assert response_post.status_code == 201
     assert response_get.status_code == 200
-    response_get.json_body['owner'] == testapp_api.app.user['_id']
+    assert response_get.json_body['owner'] == 'ccff1bee2e21e1560a7dd000'
 
 
 def test_patch_item_owner(testapp_api):
@@ -92,7 +92,7 @@ def test_patch_item_owner(testapp_api):
         response_get_after_patch = testapp_api.get('/playlists/aaff1bee2e21e1560a7dd001')
     assert response_post.status_code == 200
     assert response_get.status_code == 200
-    response_get_after_patch.json_body['owner'] == testapp_api.app.user['_id']
+    assert response_get_after_patch.json_body['owner'] == response_get.json_body['owner']
 
 
 def test_patch_item_not_owner(testapp_api):
@@ -113,10 +113,11 @@ def test_put_item_owner(testapp_api):
             '/playlists/aaff1bee2e21e1560a7dd001',
             VALID_PLAYLIST,
             headers=[('If-Match', response_get.headers['ETag'])])
-        response_get = testapp_api.get('/playlists/aaff1bee2e21e1560a7dd001')
+        response_get_after = testapp_api.get('/playlists/aaff1bee2e21e1560a7dd001')
     assert response_post.status_code == 200
     assert response_get.status_code == 200
-    response_get.json_body['owner'] == testapp_api.app.user['_id']
+    assert response_get_after.status_code == 200
+    assert response_get.json_body['owner'] == response_get_after.json_body['owner']
 
 
 def test_put_item_not_owner(testapp_api):

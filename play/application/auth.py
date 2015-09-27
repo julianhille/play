@@ -1,15 +1,27 @@
-from play.models.users import LoginUser
-from eve.auth import BasicAuth
-from flask import current_app
+from eve.auth import TokenAuth
+from flask import abort
+from flask.ext.login import current_user
 
 
-class RolesAuth(BasicAuth):
+class SessionAuth(TokenAuth):
+    """ Implements Session AUTH logic.
 
-    def check_auth(self, username, password, allowed_roles, resource, method):
-        # use Eve's own db driver; no additional connections/resources are used
-        user_db = current_app.data.driver.db['users']
+    .. versionadded:: 0.0.1
+    """
+    def authenticate(self):
+        """ Returns a standard a 401 response that enables basic auth.
+        Override if you want to change the response and/or the realm.
+        """
+        abort(401, description='Please provide proper credentials')
 
-        user = LoginUser.get_by_name(user_db, username, allowed_roles)
-        if user and user.is_active and user.authenticate(password):
-            current_app.user = user.user
-            return True
+    def authorized(self, allowed_roles, resource, method):
+        """ Validates the the current request is allowed to pass through.
+
+        :param allowed_roles: allowed roles for the current request, can be a
+                              string or a list of roles.
+        :param resource: resource being requested.
+        """
+        if current_user and current_user.is_authenticated:
+            if not allowed_roles:
+                return True
+            return set(current_user.roles) & set(allowed_roles)

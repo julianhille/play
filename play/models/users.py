@@ -10,7 +10,7 @@ class LoginUser(UserMixin):
 
     def __init__(self, user):
         self.user = user
-        self.user['_id'] = str(self.user['_id'])
+        self.user['_id'] = self.user['_id']
 
     @property
     def is_active(self):
@@ -28,10 +28,10 @@ class LoginUser(UserMixin):
         return False
 
     def get_id(self):
-        return self.user['_id']
+        return str(self.user['_id'])
 
     @staticmethod
-    def get_by_name(db, username, allowed_roles):
+    def get_by_name(db, username, allowed_roles=None):
         lookup = {'name': username}
         if allowed_roles:
             lookup['roles'] = {'$in': allowed_roles}
@@ -44,7 +44,6 @@ class LoginUser(UserMixin):
 
     @staticmethod
     def get(db, user_id):
-        print('tryng to get id')
         try:
             user = db.find_one({'_id': ObjectId(user_id)})
         except (InvalidId, TypeError):

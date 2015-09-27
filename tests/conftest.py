@@ -2,10 +2,11 @@ from contextlib import contextmanager
 import pytest
 from unittest.mock import patch, Mock
 from webtest import TestApp
+from flask.ext.login import AnonymousUserMixin
 
 from play.application.wsgi import application as api
 from play.administration.wsgi import application as admin
-
+from play.models.users import LoginUser
 
 def app_api_factory():
     return api
@@ -24,14 +25,14 @@ def testapp_api(request, humongous):
 
 
 @contextmanager
-def auth(testapp_api, user, roles=None):
+def auth(testapp_api, user):
 
-    def check_auth(username, password, allowed_roles, resource, method):
-        testapp_api.app.user = testapp_api.app.data.driver.db.users.find_one({'name': user})
-        return True
+    def check_auth(*args, **kwargs):
+        nonlocal user
+        return (LoginUser.get_by_name(testapp_api.app.data.driver.db.users, user) or
+                AnonymousUserMixin())
 
-    testapp_api.authorization = ('Basic', ('user', 'password'))
-    with patch.object(testapp_api.app.auth, 'check_auth', check_auth):
+    with patch.object(testapp_api.app.login_manager, 'request_callback', check_auth):
         yield
 
 
