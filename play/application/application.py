@@ -1,18 +1,22 @@
 from eve import Eve
-
+from flask import Config
+from flask.helpers import get_root_path
 from play.application.auth import SessionAuth
 
 
 class Application(object):
 
     def __init__(self, settings=None):
-        self.settings = settings or {}
+
+        self.settings = Config(get_root_path(__name__))
+        self.settings.from_object('play.application.default_settings')
         if 'DOMAIN' not in self.settings:
             self.settings['DOMAIN'] = {}
         self._blueprints = []
 
     def instantiate(self, *args, **kwargs):
-        app = Eve(settings=self.settings, auth=SessionAuth, **kwargs)
+        app = Eve(__name__, settings=dict(self.settings), auth=SessionAuth, **kwargs)
+
         for blueprint in self._blueprints:
             for event, function in blueprint.events.__dict__.items():
                 if event.startswith('on_'):
