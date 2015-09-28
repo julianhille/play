@@ -80,3 +80,8 @@ def test_patch_item_no_auth(testapp_api):
     with raises(AppError) as context:
         testapp_api.patch_json('/users/ccff1bee2e21e1560a7dd000', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
+
+
+def test_login(testapp_api):
+    response = testapp_api.post('/users/login', {'username': 'admin_active','password': 'password'})
+    assert response.body_json

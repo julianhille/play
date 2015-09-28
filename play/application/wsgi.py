@@ -33,5 +33,13 @@ def create_app():
 
 application = create_app()
 
+
+@application.route('/csrf', methods=['GET'])
+def csrf():
+    from flask.ext.wtf.csrf import generate_csrf
+    from flask import jsonify
+    return jsonify({'csrf': generate_csrf()})
+
+
 if __name__ == '__main__':
     application.run(debug=True, port=8002)
