@@ -1,5 +1,7 @@
+from eve.render import render_json
 from flask import current_app
 from flask.ext.login import LoginManager
+from flask.ext.wtf.csrf import CsrfProtect, generate_csrf
 
 from play.application.application import Application
 from play.application import albums, artists, directories, playlists, tracks, users
@@ -24,7 +26,7 @@ def create_app():
     app.register_blueprint(tracks.blueprint)
     app.register_blueprint(users.blueprint)
     app = app.instantiate()
-
+    CsrfProtect(app)
     login = LoginManager()
     login.init_app(app)
     login.user_loader(_user_loader)
@@ -36,9 +38,7 @@ application = create_app()
 
 @application.route('/csrf', methods=['GET'])
 def csrf():
-    from flask.ext.wtf.csrf import generate_csrf
-    from flask import jsonify
-    return jsonify({'csrf': generate_csrf()})
+    return render_json({'csrf': generate_csrf()})
 
 
 if __name__ == '__main__':

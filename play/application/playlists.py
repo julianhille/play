@@ -59,6 +59,5 @@ def ensure_user_is_owner_on_replace(item, original):
 
 @blueprint.hook('on_update')
 def ensure_user_is_owner_on_update(updates, original):
-    print('test')
     if current_user._id != original['owner']:
         abort(403)
