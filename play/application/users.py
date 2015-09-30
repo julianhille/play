@@ -1,5 +1,5 @@
 from eve.render import render_json
-from flask import abort, current_app, jsonify
+from flask import abort, current_app
 from flask.ext.login import current_user, login_user, logout_user
 
 from play.application.blueprint import Blueprint
@@ -32,7 +32,8 @@ def login():
         return render_json({'_id': str(current_user._id)})
     form = UserLoginForm()
     if form.validate_on_submit():
-        user = LoginUser.get_by_name(current_app.data.driver.db.users, form.username.data, ['admin'])
+        user = LoginUser.get_by_name(
+            current_app.data.driver.db.users, form.username.data, ['admin'])
         if user and user.authenticate(form.password.data):
             login_user(user)
             return render_json({'_id': str(current_user._id)})
