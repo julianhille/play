@@ -11,7 +11,7 @@ SCHEMA = {
     'resource_methods': ['GET'],
     'allowed_roles': ['user'],
     'schema': {
-        'artist':{
+        'artist': {
             'type': 'objectid',
             'data_relation': {
                 'resource': 'artists',

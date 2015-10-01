@@ -27,6 +27,8 @@ def test_get_resource_user(testapp_api):
 def test_get_item_user(testapp_api):
     with auth(testapp_api, user='user_active'):
         response = testapp_api.get('/users/ccff1bee2e21e1560a7dd004')
+    assert 'password' not in response.json_body
+    assert 'roles' not in response.json_body
     assert response.status_code == 200
 
 

@@ -9,7 +9,7 @@ class Application(object):
     def __init__(self, settings=None):
 
         self.settings = Config(get_root_path(__name__))
-        self.settings.from_object('play.task.default_settings')
+        self.settings.from_object('play.application.default_settings')
         if 'DOMAIN' not in self.settings:
             self.settings['DOMAIN'] = {}
         self._blueprints = []
