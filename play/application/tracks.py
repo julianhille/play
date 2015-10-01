@@ -11,11 +11,21 @@ SCHEMA = {
     'resource_methods': ['GET'],
     'allowed_roles': ['user'],
     'schema': {
-        'metadata': {
-            'type': 'dict'
+        'artist':{
+            'type': 'objectid',
+            'data_relation': {
+                'resource': 'artists',
+                'embeddable': True
+            }
         },
         'length': {
             'type': 'integer'
+        },
+        'metadata': {
+            'type': 'dict'
+        },
+        'name': {
+            'type': 'string'
         }
     }
 }

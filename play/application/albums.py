@@ -8,7 +8,11 @@ SCHEMA = {
     'allowed_roles': ['user'],
     'schema': {
         'artist': {
-            'type': 'objectid'
+            'type': 'objectid',
+            'data_relation': {
+                'resource': 'artists',
+                'embeddable': True
+            }
         },
         'length': {
             'type': 'integer'
@@ -19,7 +23,11 @@ SCHEMA = {
         'tracks': {
             'type': 'list',
             'schema': {
-                'type': 'objectid'
+                'type': 'objectid',
+                'data_relation': {
+                    'resource': 'tracks',
+                    'embeddable': True
+                }
             }
         },
         'year': {

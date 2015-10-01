@@ -23,13 +23,20 @@ SCHEMA = {
         },
         'owner': {
             'type': 'objectid',
-            #  'embeddable': True,
+            'data_relations': {
+                'resource': 'users',
+                'embeddable': True,
+            },
             'readonly': True
         },
         'tracks': {
             'type': 'list',
             'schema': {
-                'type': 'objectid'
+                'type': 'objectid',
+                'data_relation': {
+                    'resource': 'tracks',
+                    'embeddable': True
+                }
             }
         },
     }
