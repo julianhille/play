@@ -23,7 +23,7 @@ SCHEMA = {
         },
         'owner': {
             'type': 'objectid',
-            'data_relations': {
+            'data_relation': {
                 'resource': 'users',
                 'embeddable': True,
             },
