@@ -30,6 +30,12 @@ class LoginUser(UserMixin):
     def get_id(self):
         return str(self.user['_id'])
 
+    def has_role(self, roles):
+        if not roles:
+            return True
+
+        return set(self.roles).intersection(roles)
+
     @staticmethod
     def get_by_name(db, username, allowed_roles=None):
         lookup = {'name': username}
