@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from fake_filesystem import FakeFilesystem
 import pytest
 from unittest.mock import Mock, patch
 from webtest import TestApp
@@ -33,3 +34,12 @@ def auth(testapp_api, user):
 
     with patch.object(testapp_api.app.login_manager, 'request_callback', check_auth):
         yield
+
+
+@pytest.fixture(autouse=True)
+def file_system():
+    fs = FakeFilesystem()
+    fs.CreateDirectory('/tmp/open/')
+    fs.CreateFile('/tmp/open/git.test', contents='Some_content')
+
+    return fs

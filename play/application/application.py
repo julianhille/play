@@ -5,7 +5,7 @@ from flask import Config
 from flask.helpers import get_root_path
 from flask.ext.login import current_user
 
-from play.application import default_settings
+from play import default_settings
 from play.application.auth import SessionAuth
 
 

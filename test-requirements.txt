@@ -1,5 +1,6 @@
 humongous
 mongomock==2.3.1
+pyfakefs
 pytest
 pytest-cov
 webtest

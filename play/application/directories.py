@@ -1,4 +1,5 @@
 from play.application.blueprint import Blueprint
+from play.task.application import directory_scan
 
 SCHEMA = {
     'item_title': 'directory',
@@ -33,3 +34,16 @@ SCHEMA = {
 
 
 blueprint = Blueprint('directories', __name__, SCHEMA)
+
+
+@blueprint.hook('on_inserted')
+def ensure_scan_on_insert(documents):
+    for document in documents:
+        directory_scan.delay(document['path'])
+
+
+@blueprint.hook('on_replaced')
+@blueprint.hook('on_updated')
+def ensure_scan_on_update(update, original=None):
+    if 'path' in update and update['path'] != original['path']:
+        directory_scan.delay(update['path'])

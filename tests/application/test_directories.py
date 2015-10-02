@@ -69,7 +69,8 @@ def test_post_item_admin(testapp_api):
     assert response.status_code == 201
 
 
-def test_put_item_admin(testapp_api):
+@patch('play.application.directories.directory_scan')
+def test_put_item_admin(scan, testapp_api):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
         with auth(testapp_api, user='admin_active'):
             response_get = testapp_api.get('/directories/ddff19b92e21e1560a7dd001')
@@ -77,17 +78,32 @@ def test_put_item_admin(testapp_api):
                 '/directories/ddff19b92e21e1560a7dd001',
                 {'path': '/abc/123', 'parent': None},
                 headers=[('If-Match', response_get.headers['ETag'])])
+    scan.delay.assert_called_once_with('/abc/123')
     assert response.status_code == 200
 
 
-def test_patch_item_admin(testapp_api):
+@patch('play.application.directories.directory_scan')
+def test_patch_item_admin(scan, testapp_api):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
         with auth(testapp_api, user='admin_active'):
             response_get = testapp_api.get('/directories/ddff19b92e21e1560a7dd001')
             response = testapp_api.patch_json(
-                '/directories/ddff19b92e21e1560a7dd001', {},
+                '/directories/ddff19b92e21e1560a7dd001', {'path': '/abc/123'},
                 headers=[('If-Match', response_get.headers['ETag'])])
     assert response.status_code == 200
+    scan.delay.assert_called_once_with('/abc/123')
+
+
+@patch('play.application.directories.directory_scan')
+def test_patch_item_admin_without_path(scan, testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user='admin_active'):
+            response_get = testapp_api.get('/directories/ddff19b92e21e1560a7dd001')
+            response = testapp_api.patch_json(
+                '/directories/ddff19b92e21e1560a7dd001', {'parent': None},
+                headers=[('If-Match', response_get.headers['ETag'])])
+    assert response.status_code == 200
+    assert scan.delay.call_count == 0
 
 
 def test_post_item_user(testapp_api):
