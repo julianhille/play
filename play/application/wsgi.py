@@ -14,7 +14,7 @@ settings = {
 
 
 def _user_loader(user_id):
-    return LoginUser.get(current_app.driver.db['users'], user_id)
+    return LoginUser.get(current_app.data.driver.db['users'], user_id)
 
 
 def create_app():

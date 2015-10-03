@@ -114,6 +114,19 @@ def test_login_with_correct_csrf(testapp_api):
     assert validate.call_count == 1
 
 
+def test_login_with_correct_csrf_twice(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)) as validate:
+        response_login = testapp_api.post(
+            '/users/login', {'username': 'admin_active', 'password': 'password'},
+            headers=[('X-CSRF-Token', '123123123')])
+        response_logged_in = testapp_api.post(
+            '/users/login', {'username': 'ANY', 'password': 'WRONG'},
+            headers=[('X-CSRF-Token', '123123123')])
+    assert response_login.json_body == {'_id': 'ccff1bee2e21e1560a7dd001'}
+    assert response_login.json_body['_id'] == response_logged_in.json_body['_id']
+    assert validate.call_count == 2
+
+
 def test_login_without_user(testapp_api):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
         with raises(AppError) as context:
