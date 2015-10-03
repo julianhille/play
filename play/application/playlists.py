@@ -68,3 +68,4 @@ def ensure_user_is_owner_on_replace(item, original):
 def ensure_user_is_owner_on_update(updates, original):
     if current_user._id != original['owner']:
         abort(403)
+    updates['owner'] = current_user._id

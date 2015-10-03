@@ -1,5 +1,5 @@
 from eve.render import render_json
-from flask import current_app
+from flask import current_app, Response
 from flask.ext.login import LoginManager
 from flask.ext.wtf.csrf import CsrfProtect, generate_csrf
 
@@ -38,8 +38,10 @@ application = create_app()
 
 @application.route('/csrf', methods=['GET'])
 def csrf():
-    return render_json({'csrf': generate_csrf()})
-
+    csrf = generate_csrf()
+    response = Response(render_json({'csrf': csrf}), mimetype='application/json')
+    response.set_cookie('XSRF-TOKEN', csrf)
+    return response
 
 if __name__ == '__main__':  # nocov
     application.run(debug=True, port=8002)

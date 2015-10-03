@@ -8,4 +8,5 @@ def test_csrf_auth(testapp_api, user):
         response = testapp_api.get('/csrf')
     assert response.status_code == 200
     assert 'csrf' in response.json_body
+    assert any(value.startswith('XSRF-TOKEN') for value in response.headers.values())
     assert response.json_body['csrf']
