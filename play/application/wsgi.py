@@ -41,5 +41,5 @@ def csrf():
     return render_json({'csrf': generate_csrf()})
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # nocov
     application.run(debug=True, port=8002)
