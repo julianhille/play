@@ -1,0 +1,118 @@
+<html ng-app="PlayApp">
+<head>
+  <meta charset="utf8" />
+  <title>AngularJS Tutorial</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+<body>
+
+    <div class="container-fluid full">
+        <div id="viewport" class="">
+            <div ng-controller="PlaylistController" class="col-md-3">
+                <div id="playlists" class="container-fluid viewports">
+                    <div id="playlists-list" class="list-group">
+                        <div class="list-group-item navbar-form">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="playlists-search" />
+                                <button type="button" id="playlists-new" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                            </div>
+                        </div>
+                        <div class="dropdown playlist list-group-item" ng-click="go(playlist._id)" ng-repeat="playlist in playlists._items">
+                                <span class="badge">{{ playlist.tracks.length }}</span>
+                                <a href="#"><span class="playlist-name">{{ playlist.name }}</span></a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div id="tracks" class="viewports col-md-9" ng-controller="TracksController">
+                <div class="row">
+                       <div class="col-md-4">
+                            Playlistname: {{ trackListService.trackList.name }}
+                       </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                       created by: {{ trackListService.trackList.owner.name }} - playlist track count: playlist complte length: <%= duration %>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 tracklist">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="span1"></th>
+                                    <th >Name</th>
+                                    <th></th>
+                                    <th><span class="glyphicon glyphicon-time"></span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="track in trackListService.trackList.tracks">
+                                    <td class="table-button"><span data-track-id="{{ track._id }}" class="play-track glyphicon glyphicon-play"></span></td>
+                                    <td>{{ track.name }}</td>
+                                    <td class="table-button">
+                                        <button type="button" class="edit-track btn badge btn-default" aria-label="Left Align">
+                                            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                        </button>
+                                    </td>
+                                    <td class="table-button"><span class="badge">{{ track.duration | duration}}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+   <div ng-controller="LoginController" id="login-modal" class="modal fade" style="" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+       <div class="modal-dialog">
+           <div class="modal-content">
+               <form id="login-form" action="/test" method="POST">
+                   <div class="modal-header">
+                       <h4 class="modal-title">Login</h4>
+                   </div>
+                   <div class="modal-body">
+                       <div class="form-group">
+                           <input type="text" id="login-name" class="form-control" placeholder="Login name" aria-describedby="login-name-addon" />
+                       </div>
+                       <div class="form-group">
+                           <input type="password" id="login-password" class="form-control" placeholder="***" aria-describedby="login-password-addon" />
+                       </div>
+                   </div>
+                   <div class="modal-footer">
+                       <button id="login-form-submit" type="submit" class="btn btn-primary">Login</button>
+                   </div>
+               </form>
+           </div><!-- /.modal-content -->
+       </div><!-- /.modal-dialog -->
+   </div><!-- /.modal -->
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular-route.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="/static/app/app.js"></script>
+    <style>
+
+       html,body {height:100%;}
+
+    #viewport, .viewports {height:100%;}
+    .full {height:calc(100% - 72px);}
+
+    .table-button {width:60px;}
+
+
+    #playlists-list {
+        height:100%;
+        overflow-y:scroll;
+    }
+    </style>
+</body>
+</html>
