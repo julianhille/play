@@ -8,7 +8,7 @@ var k = 0;
 
 
 
-var app = angular.module('PlayApp', ['ngRoute'])
+var app = angular.module('PlayApp', ['ngRoute', 'rzModule'])
 app.value('apiUrl', '//localhost:8000/api')
 
 app.config(['$httpProvider', function ($httpProvider) {
@@ -25,6 +25,7 @@ app.filter('duration', function() {
     return function(length) {
         if (!length)
             length = 0;
+        length = Math.floor(length)
         var ms = divmod(length, 60);var m = ms[0];var s = ms[1];
         var hm = divmod(m, 60); var h = hm[0]; var m = hm[1];
         if (h > 0) {
@@ -49,7 +50,7 @@ app.controller('PlaylistController', ['$scope', 'PlaylistRepository', 'TrackList
             playlist_id)
     }
     $scope.playlist = null
-    PlaylistRepository.getPlaylists(function(data) {$scope.playlists = data; console.log($scope.playlists);});
+    PlaylistRepository.getPlaylists(function(data) {$scope.playlists = data;});
 }]);
 
 app.controller('TracksController', ['$scope', 'TrackListService', function($scope, TrackListService) {
@@ -117,11 +118,69 @@ app.service('PlaylistRepository', function(apiUrl, $http) {
 });
 
 
-apiModule.service('TracksRepository', function(apiUrl, $http) {
-  this.
-        getTrack = function (callback, id) {
+app.service('TracksRepository', function(apiUrl, $http) {
+  this.getTrack = function (callback, id) {
             $http.get(apiUrl + '/track/' + id).success(function(data){
                    callback (data);
             });
         }
+});
+
+
+app.directive('aplayer',function($interval) {
+    return {
+        restrict:'A',
+        scope: {
+            stream: '='
+
+        },
+        templateUrl: '/audioplayer.html',
+        link: function($scope, element, attrs){
+        },
+        controller: function($scope){
+            $scope.positionSlider = 0
+            $scope.volumeSlider = 50
+            $scope.volumeIcon =
+            $scope.stream = 'https://ia902508.us.archive.org/5/items/testmp3testfile/mpthreetest.mp3';
+            if(typeof $scope.stream == "string"){
+              $scope.audio = new Audio();
+              $scope.audio.src = $scope.stream;
+              $scope.vol = 0.6;
+              $scope.audio.volume = 0.6;
+              $scope.playButton = 'glyphicon-play';
+            }
+            var setMuteIcon = function() {
+                $scope.volumeIcon = $scope.audio.muted ?  'glyphicon-volume-off' : 'glyphicon-volume-up';
+            }
+            setMuteIcon()
+            $scope.mute = function() {
+               $scope.audio.muted = !$scope.audio.muted;
+               setMuteIcon();
+            };
+            $scope.play = function(){
+                if($scope.audio.paused) {
+                    $scope.audio.play();
+                } else {
+                    $scope.audio.pause();
+                }
+            };
+            $scope.$watch('audio.paused', function(newval) {
+                if (newval) {
+                    $scope.playButton = 'glyphicon-play';
+                } else {
+                    $scope.playButton = 'glyphicon-pause';
+                }
+            })
+            $interval(function(){
+                $scope.ctime = $scope.audio.currentTime;
+                $scope.positionSlider = $scope.audio.currentTime;
+            }, 100);
+            $scope.changetime = function(){
+                $scope.audio.currentTime = $scope.positionSlider;
+            };
+            $scope.changevol = function(t){
+                $scope.audio.volume = $scope.volumeSlider / 100;
+            };
+        }
+    };
 });
