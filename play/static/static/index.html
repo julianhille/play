@@ -35,7 +35,9 @@
                 </div>
                 <div class="row">
                     <div class="col-md-12">
-                       created by: {{ trackListService.trackList.owner.name }} - playlist track count: playlist complte length: <%= duration %>
+                        created by: {{ trackListService.trackList.owner.name }} -
+                        Tracks: {{ trackListService.trackList.tracks.length }}
+                        playlist complte length: <%= duration %>
                     </div>
                 </div>
                 <div class="row">
@@ -65,7 +67,7 @@
                     </div>
                 </div>
             </div>
-            <div aplayer="https://ia902508.us.archive.org/5/items/testmp3testfile/mpthreetest.mp3"></div>
+            <div aplayer></div>
         </div>
     </div>
 
