@@ -53,7 +53,7 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="track in trackListService.trackList.tracks">
-                                    <td class="table-button"><span data-track-id="{{ track._id }}" class="play-track glyphicon glyphicon-play"></span></td>
+                                    <td class="table-button"><span ng-click="play(track._id)"class="play-track glyphicon glyphicon-play"></span></td>
                                     <td>{{ track.name }}</td>
                                     <td class="table-button">
                                         <button type="button" class="edit-track btn badge btn-default" aria-label="Left Align">
@@ -104,7 +104,7 @@
                 <img src="" />
             </div>
             <div id="playlist-trackinfos" class="row">
-                <span>Name</span>
+                <span>{{ trackService.track.name }}</span>
             </div>
             <div class="row">
                 <rzslider rz-slider-model="positionSlider" rz-slider-always-show-bar="1" rz-slider-tpl-url="sliderTemplate.html" rz-slider-step="0.09" rz-slider-ceil="audio.duration.toFixed()" rz-slider-precision="1" rz-slider-on-change="changetime()"></rzslider>

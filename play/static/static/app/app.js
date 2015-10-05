@@ -16,6 +16,18 @@ app.config(['$httpProvider', function ($httpProvider) {
 
 }]);
 
+app.filter('getByProperty', function() {
+    return function(propertyName, propertyValue, collection) {
+        var i=0, len=collection.length;
+        for (; i<len; i++) {
+            if (collection[i][propertyName] == propertyValue) {
+                return collection[i];
+            }
+        }
+        return null;
+    }
+});
+
 
 app.filter('duration', function() {
     function divmod(x, y) {
@@ -53,9 +65,13 @@ app.controller('PlaylistController', ['$scope', 'PlaylistRepository', 'TrackList
     PlaylistRepository.getPlaylists(function(data) {$scope.playlists = data;});
 }]);
 
-app.controller('TracksController', ['$scope', 'TrackListService', function($scope, TrackListService) {
+app.controller('TracksController', ['$scope', '$filter', 'TrackListService', 'TrackService', function($scope, $filter, TrackListService, TrackService) {
     $scope.trackListService = TrackListService;
-    $scope.go = function() { alert('test123'); }
+    $scope.trackService = TrackService
+    $scope.play = function(track_id) {
+        var track = $filter('getByProperty')('_id', track_id, $scope.trackListService.trackList.tracks);
+        $scope.trackService.setTrack(track)
+    };
 }]);
 
 app.service('TrackListService', function() {
@@ -66,6 +82,14 @@ app.service('TrackListService', function() {
             this.trackListType = 'playlist';
     }
     this.trackList = trackList
+});
+
+
+app.service('TrackService', function() {
+    this.track = null;
+    this.setTrack =  function(track) {
+            this.track = track;
+    }
 });
 
 
@@ -119,11 +143,14 @@ app.service('PlaylistRepository', function(apiUrl, $http) {
 
 
 app.service('TracksRepository', function(apiUrl, $http) {
-  this.getTrack = function (callback, id) {
-            $http.get(apiUrl + '/track/' + id).success(function(data){
-                   callback (data);
-            });
-        }
+    this.getTrack = function (callback, id) {
+        $http.get(apiUrl + '/track/' + id).success(function(data){
+               callback (data);
+        });
+    }
+    this.getStream = function(callback, id) {
+        return callback(apiUrl + '/stream/' + id);
+    }
 });
 
 
@@ -137,25 +164,23 @@ app.directive('aplayer',function($interval) {
         templateUrl: '/audioplayer.html',
         link: function($scope, element, attrs){
         },
-        controller: function($scope){
+        controller: function($scope, TrackService, TracksRepository){
+            console.log(TrackService.track)
             $scope.positionSlider = 0
             $scope.volumeSlider = 50
             $scope.volumeIcon =
-            $scope.stream = 'https://ia902508.us.archive.org/5/items/testmp3testfile/mpthreetest.mp3';
-            if(typeof $scope.stream == "string"){
-              $scope.audio = new Audio();
-              $scope.audio.src = $scope.stream;
-              $scope.vol = 0.6;
-              $scope.audio.volume = 0.6;
-              $scope.playButton = 'glyphicon-play';
-            }
-            var setMuteIcon = function() {
-                $scope.volumeIcon = $scope.audio.muted ?  'glyphicon-volume-off' : 'glyphicon-volume-up';
-            }
-            setMuteIcon()
+            $scope.trackService = TrackService;
+
+            $scope.audio = new Audio();
+
+            $scope.audio.volume = 0.6;
+            $scope.$watch('trackService.track', function(newval){
+                if ($scope.trackService.track)
+                     TracksRepository.getStream(function(link) {$scope.audio.src = link}, $scope.trackService.track._id);
+            });
+
             $scope.mute = function() {
-               $scope.audio.muted = !$scope.audio.muted;
-               setMuteIcon();
+                $scope.audio.muted = !$scope.audio.muted;
             };
             $scope.play = function(){
                 if($scope.audio.paused) {
@@ -170,7 +195,10 @@ app.directive('aplayer',function($interval) {
                 } else {
                     $scope.playButton = 'glyphicon-pause';
                 }
-            })
+            });
+            $scope.$watch('audio.muted', function(newval) {
+                $scope.volumeIcon = $scope.audio.muted ?  'glyphicon-volume-off' : 'glyphicon-volume-up';
+            });
             $interval(function(){
                 $scope.ctime = $scope.audio.currentTime;
                 $scope.positionSlider = $scope.audio.currentTime;
