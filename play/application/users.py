@@ -1,9 +1,5 @@
-from eve.render import render_json
-from flask import abort, current_app
-from flask.ext.login import current_user, login_user, logout_user
-
 from play.application.blueprint import Blueprint
-from play.models.users import UserLoginForm, LoginUser
+
 
 SCHEMA = {
     'item_title': 'user',

@@ -24,7 +24,10 @@ def test_login_with_correct_csrf(testapp_api):
         response = testapp_api.post(
             '/me/login', {'username': 'admin_active', 'password': 'password'},
             headers=[('X-CSRF-Token', '123123123')])
-    assert response.json_body == {'_id': 'ccff1bee2e21e1560a7dd001'}
+    assert response.status_code == 302
+    followed = response.follow().json_body
+    assert followed['_id'] == 'ccff1bee2e21e1560a7dd001'
+    assert followed['name'] == 'admin_active'
     assert validate.call_count == 1
 
 
@@ -33,11 +36,15 @@ def test_login_with_correct_csrf_twice(testapp_api):
         response_login = testapp_api.post(
             '/me/login', {'username': 'admin_active', 'password': 'password'},
             headers=[('X-CSRF-Token', '123123123')])
-        response_logged_in = testapp_api.post(
-            '/me/login', {'username': 'ANY', 'password': 'WRONG'},
-            headers=[('X-CSRF-Token', '123123123')])
-    assert response_login.json_body == {'_id': 'ccff1bee2e21e1560a7dd001'}
-    assert response_login.json_body['_id'] == response_logged_in.json_body['_id']
+        with raises(AppError) as logged_in_context:
+            testapp_api.post(
+                '/me/login', {'username': 'ANY', 'password': 'WRONG'},
+                headers=[('X-CSRF-Token', '123123123')])
+
+    assert response_login.status_code == 302
+    followed = response_login.follow().json_body
+    assert followed['name'] == 'admin_active'
+    assert '409 CONFLICT' in str(logged_in_context.value)
     assert validate.call_count == 2
 
 
@@ -92,7 +99,7 @@ def test_get_item_user(testapp_api):
     assert response.json_body['name'] == 'user_active'
     assert 'last_login' in response.json_body
     assert 'password' not in response.json_body
-    assert response.json_body['_links']['self']['href'] == 'me/'
+    assert response.json_body['_links']['self']['href'] == '/me/'
 
 
 def test_patch_item_user(testapp_api):
@@ -103,7 +110,7 @@ def test_patch_item_user(testapp_api):
                     '/me', {'password': 'abc'},
                     headers=[('If-Match', response_get.headers['ETag'])])
     assert response.status_code == 200
-    assert response.json_body['_links']['self']['href'] == 'me/'
+    assert response.json_body['_links']['self']['href'] == '/me/'
 
 
 def test_post_item_no_auth(testapp_api):

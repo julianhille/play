@@ -1,5 +1,5 @@
 from eve.render import render_json
-from flask import current_app, Response, request, session
+from flask import current_app, Response
 from flask.ext.login import LoginManager
 from flask.ext.wtf.csrf import CsrfProtect, generate_csrf
 

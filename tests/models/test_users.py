@@ -41,10 +41,11 @@ def test_get_attr():
     assert user._id == 123
     assert user.something == 'test'
 
+
 @patch('play.models.users.gensalt')
 @patch('play.models.users.hashpw')
 def test_hash_pw(hashpw, gensalt):
     gensalt.return_value = 'some salt'
-    user = LoginUser.hash_password('password')
+    LoginUser.hash_password('password')
     hashpw.assert_called_once_with(b'password', 'some salt')
     gensalt.assert_called_once_with()

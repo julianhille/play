@@ -37,17 +37,18 @@ SCHEMA = {
 
 
 blueprint = Blueprint('me', __name__, SCHEMA, url_prefix='/me')
+blueprint.add_url_rule
 
 
 @blueprint.route('/', methods=['GET', 'PATCH'])
 @requires_auth('me')
-def me():
+def home():
     lookup = {'_id': current_user._id}
     if request.method == 'GET':
-        response, last_modified, etag, code  = getitem('me', lookup)
+        response, last_modified, etag, code = getitem('me', lookup)
     elif request.method == 'PATCH':
         response, last_modified, etag, code = patch('me', lookup)
-    response['_links']['self']['href'] = 'me/'
+    response['_links']['self']['href'] = url_for('me.home')
     return send_response('me', (response, last_modified, etag, code))
 
 
@@ -60,13 +61,13 @@ def replace_password(document, original):
 @blueprint.route('/login', methods=['POST', 'GET'])
 def login():
     if current_user.is_authenticated:
-        return render_json({'_id': str(current_user._id)})
+        abort(409, 'user already logged in')
     form = UserLoginForm()
     if form.validate_on_submit():
         user = LoginUser.get_by_name(
             current_app.data.driver.db.users, form.username.data, ['admin'])
         if user and user.authenticate(form.password.data) and login_user(user):
-            return redirect(url_for('.me'))
+            return redirect(url_for('me.home'))
         form.username.errors.append('Username/password combination unknown')
     errors = {}
     for field_name, field_errors in form.errors.items():
