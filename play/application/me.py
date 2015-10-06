@@ -40,7 +40,7 @@ blueprint = Blueprint('me', __name__, SCHEMA, url_prefix='/me')
 blueprint.add_url_rule
 
 
-@blueprint.route('/', methods=['GET', 'PATCH'])
+@blueprint.route('', methods=['GET', 'PATCH'])
 @requires_auth('me')
 def home():
     lookup = {'_id': current_user._id}
@@ -49,6 +49,7 @@ def home():
     elif request.method == 'PATCH':
         response, last_modified, etag, code = patch('me', lookup)
     response['_links']['self']['href'] = url_for('me.home')
+    response.pop('password', None)
     return send_response('me', (response, last_modified, etag, code))
 
 
@@ -65,7 +66,7 @@ def login():
     form = UserLoginForm()
     if form.validate_on_submit():
         user = LoginUser.get_by_name(
-            current_app.data.driver.db.users, form.username.data, ['admin'])
+            current_app.data.driver.db.users, form.username.data)
         if user and user.authenticate(form.password.data) and login_user(user):
             return redirect(url_for('me.home'))
         form.username.errors.append('Username/password combination unknown')
@@ -79,4 +80,4 @@ def login():
 @blueprint.route('/logout', methods=['POST'])
 def logout():
     logout_user()
-    return render_json({})
+    return '', 204
