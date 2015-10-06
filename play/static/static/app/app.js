@@ -129,10 +129,13 @@ app.service('CsrfRepository', ['apiUrl', '$http' , function(apiUrl, $http) {
 
 
 app.service('PlaylistRepository', function(apiUrl, $http) {
-    this.getPlaylists = function (callback) {
-        $http.get(apiUrl + '/playlists?embedded={"tracks": 1, "owner": 1}').success(function(data){
+    this.getPlaylists = function (callback, where) {
+        $http.get(apiUrl + '/playlists?embedded={"tracks": 1, "owner": 1}&where=' + where).success(function(data){
             callback(data);
         });
+    };
+    this.getUserPlaylists = function (callback, user_id) {
+        this.getPlaylists(callback, {'owner': user_id})
     };
     this.getPlaylist = function (callback, id) {
         $http.get(apiUrl + '/playlists/'+ id +'/?embedded={"tracks": 1, "owner": 1}').success(function(data){

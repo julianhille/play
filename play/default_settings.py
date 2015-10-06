@@ -3,6 +3,7 @@ _DB = 'play'
 MONGO_URI = 'mongodb://127.0.0.1:27017/{}'.format(_DB)
 WTF_CSRF_SECRET_KEY = 'abcabcabcabc'
 WTF_CSRF_HEADERS = ['X-CSRFToken', 'X-CSRF-Token', 'X-XSRFToken', 'X-XSRF-Token']
+WTF_CSRF_TIME_LIMIT = None
 SECRET_KEY = 'sdklfjoi4o2ij34foi23j'
 
 

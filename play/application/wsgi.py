@@ -4,7 +4,7 @@ from flask.ext.login import LoginManager
 from flask.ext.wtf.csrf import CsrfProtect, generate_csrf
 
 from play.application.application import Application
-from play.application import albums, artists, directories, playlists, tracks, users
+from play.application import albums, artists, directories, me, playlists, tracks, users
 from play.models.users import LoginUser
 
 settings = {
@@ -22,6 +22,7 @@ def create_app():
     app.register_blueprint(albums.blueprint)
     app.register_blueprint(artists.blueprint)
     app.register_blueprint(directories.blueprint)
+    app.register_blueprint(me.blueprint)
     app.register_blueprint(playlists.blueprint)
     app.register_blueprint(tracks.blueprint)
     app.register_blueprint(users.blueprint)
