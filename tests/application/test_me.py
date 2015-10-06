@@ -86,10 +86,22 @@ def test_logout_with_correct_csrf(testapp_api):
     assert validate.call_count == 1
 
 
-def test_get_item_no_auth(testapp_api):
-    with raises(AppError) as context:
-        testapp_api.get('/me')
+def test_get_item_no_auth_without_cookie(testapp_api):
+    with patch('play.application.me.generate_csrf') as csrf:
+        csrf.return_value = "SOMETOKEN"
+        with raises(AppError) as context:
+            testapp_api.get('/me')
     assert '401 UNAUTHORIZED' in str(context.value)
+    assert csrf.call_count == 1
+
+
+def test_get_item_no_auth_with_cookie(testapp_api):
+    with patch('play.application.me.generate_csrf') as csrf:
+        csrf.return_value = "SOMETOKEN"
+        with raises(AppError) as context:
+            testapp_api.get('/me', headers=[('Cookie', 'XSRF-TOKEN=ABC;')])
+    assert '401 UNAUTHORIZED' in str(context.value)
+    assert csrf.call_count == 0
 
 
 def test_get_item_user(testapp_api):
@@ -111,22 +123,39 @@ def test_patch_password_item_user(testapp_api, humongous):
             with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
                 response_get = testapp_api.get('/me')
                 response = testapp_api.patch_json(
-                    '/me', {'password': 'abc'},
+                    '/me', {'password': 'abcdef'},
                     headers=[('If-Match', response_get.headers['ETag'])])
-    
     user_after = LoginUser.get_by_name(humongous.users, 'user_active')
-    login_user.hash_password.assert_called_once_with('abc')
+    login_user.hash_password.assert_called_once_with('abcdef')
     assert user_before.password != user_after.password
     assert user_after.password == 'some_password'
     assert response.status_code == 200
     assert response.json_body['_links']['self']['href'] == '/me'
 
 
-def test_post_item_no_auth(testapp_api):
+def test_register(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        response = testapp_api.post_json('/me', {'name': '123ABC', 'password': '123456'})
+    assert response.status_code == 201
+    assert 'password' not in response.json_body
+    assert 'active' not in response.json_body
+
+
+def test_register_logged_in(testapp_api):
+    with auth(testapp_api, user='user_active'):
+        with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+            with raises(AppError) as context:
+                testapp_api.post_json('/me', {'name': '123ABC', 'password': '123456'})
+    assert '400 BAD REQUEST' in str(context.value)
+
+
+def test_register_bulk(testapp_api):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
         with raises(AppError) as context:
-            testapp_api.post_json('/me', {})
-    assert '405 METHOD NOT ALLOWED' in str(context.value)
+            testapp_api.post_json(
+                '/me', [{'name': '123ABC', 'password': '123456'},
+                        {'name': '123ABC12', 'password': '123456'}])
+    assert '400 BAD REQUEST' in str(context.value)
 
 
 def test_put_item_no_auth(testapp_api):

@@ -1,9 +1,10 @@
 from eve.methods import getitem, patch
 from eve.auth import requires_auth
-from eve.render import render_json, send_response
+from eve.render import send_response
 
 from flask import abort, current_app, request, redirect, url_for
 from flask.ext.login import current_user, login_user, logout_user
+from flask.ext.wtf.csrf import generate_csrf
 
 from play.application.blueprint import Blueprint
 from play.models.users import UserLoginForm, LoginUser
@@ -17,27 +18,51 @@ SCHEMA = {
             'last_login': 1
         }
     },
-
-    'public_item_methods': [],
+    'public_methods': ['POST'],
     'item_methods': ['GET', 'PATCH'],
-    'resource_methods': [],
+    'resource_methods': ['POST'],
     'allowed_roles': ['user'],
     'schema': {
         'name': {
-            'type': 'string'
+            'unique': True,
+            'type': 'string',
+            'minlength': 5,
+            'maxlength': 12,
+            'required': True
         },
         'last_login': {
             'type': 'datetime'
         },
         'password': {
-            'type': 'string'
+            'type': 'string',
+            'minlength': 6,
+            'required': True
         }
     }
 }
 
 
 blueprint = Blueprint('me', __name__, SCHEMA, url_prefix='/me')
-blueprint.add_url_rule
+
+
+@blueprint.after_request
+def add_csrf_token(response):
+    print(request.headers, request.cookies)
+    if not request.cookies.get('XSRF-TOKEN'):
+        response.set_cookie('XSRF-TOKEN', generate_csrf())
+    return response
+
+
+@blueprint.hook('on_insert')
+def ensure_password_encoding(documents):
+    if current_user.is_authenticated:
+        abort(400, 'already registered')
+    if len(documents) > 1:
+        abort(400, 'no bulk insertion is allowed')
+    for document in documents:
+        document['password'] = LoginUser.hash_password(document['password'])
+        document['active'] = False
+        document['roles'] = ['user']
 
 
 @blueprint.route('', methods=['GET', 'PATCH'])
@@ -48,7 +73,8 @@ def home():
         response, last_modified, etag, code = getitem('me', lookup)
     elif request.method == 'PATCH':
         response, last_modified, etag, code = patch('me', lookup)
-    response['_links']['self']['href'] = url_for('me.home')
+    if '_links' in response:
+        response['_links']['self']['href'] = url_for('me.home')
     response.pop('password', None)
     return send_response('me', (response, last_modified, etag, code))
 
