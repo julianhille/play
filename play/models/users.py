@@ -1,4 +1,4 @@
-from bcrypt import hashpw
+from bcrypt import hashpw, gensalt
 from bson.objectid import InvalidId, ObjectId
 from flask_wtf import Form
 from flask.ext.login import UserMixin
@@ -26,6 +26,11 @@ class LoginUser(UserMixin):
         if compare_digest(hashpw(password, current_password), current_password):
             return True
         return False
+
+    @staticmethod
+    def hash_password(password):
+        password = password.encode('UTF-8')
+        return hashpw(password, gensalt())
 
     def get_id(self):
         return str(self.user['_id'])
