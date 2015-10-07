@@ -20,6 +20,19 @@ SCHEMA = {
                 'embeddable': True
             },
         },
+        'parents': {
+            'type': 'list',
+            'readonly': True,
+            'schema': {
+                'type': 'objectid',
+                'required': True,
+                'nullable': True,
+                'data_relation': {
+                    'resource': 'directories',
+                    'embeddable': True
+                },
+            },
+        },
         'path': {
             'type': 'string',
             'required': True,

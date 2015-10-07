@@ -36,6 +36,7 @@ def directory_scan(dir_path):
         if item.is_dir():
             insert = {
                 'parent': directory['_id'],
+                'parents': directory['parents'] + [directory['_id']],
                 'name': item.name,
                 'path': path.abspath(item.path),
                 'scanned': datetime.now(),
