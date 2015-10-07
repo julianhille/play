@@ -2,24 +2,54 @@
 <head>
   <meta charset="utf8" />
   <title>AngularJS Tutorial</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/bootstrap.css">
 </head>
 <body>
 
-    <div class="container-fluid full">
-        <div id="viewport" class="">
+    <div class="container-fluid full" ng-controller="MainController">
+
+
+     <div ng-if="!userService.user" class="container-fluid" ng-controller="LoginController">
+           <form id="login-form" method="POST" ng-submit="submit()">
+               <div class="modal-header">
+                   <h4 class="modal-title">Login</h4>
+               </div>
+               <div class="modal-body">
+                   <div class="form-group">
+                       <input type="text" id="login-name" class="form-control" placeholder="Login name" aria-describedby="login-name-addon" ng-model="name" />
+                   </div>
+                   <div class="form-group">
+                       <input type="password" id="login-password" class="form-control" placeholder="***" aria-describedby="login-password-addon" ng-model="password" />
+                   </div>
+                    <div class="form-group">
+                       <input type="checkbox" id="login-remember" class="form-control"  aria-describedby="login-remember-addon" ng-model="remember" />
+                   </div>
+               </div>
+               <div class="modal-footer">
+                   <button id="login-form-submit" type="submit" class="btn btn-primary">Login</button>
+               </div>
+           </form>
+       </div>
+
+
+        <div class="" ng-if="userService.user">
+            <span ng-click="userService.logout()">Hello {{ userService.user.name }} Logme out</span>
             <div ng-controller="PlaylistController" class="col-md-3">
                 <div id="playlists" class="container-fluid viewports">
                     <div id="playlists-list" class="list-group">
                         <div class="list-group-item navbar-form">
                             <div class="form-group">
-                                <input type="text" class="form-control" id="playlists-search" />
-                                <button type="button" id="playlists-new" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                                <input type="text" ng-model="query" class="form-control" id="playlists-search" />
+                                <button ng-click="new_item=1" type="button" id="playlists-new" class="btn btn-default form-control"><span class="glyphicon glyphicon-plus"></span></button>
                             </div>
                         </div>
-                        <div class="dropdown playlist list-group-item" ng-click="go(playlist._id)" ng-repeat="playlist in playlists._items">
-                                <span class="badge">{{ playlist.tracks.length }}</span>
-                                <a href="#"><span class="playlist-name">{{ playlist.name }}</span></a>
+                        <div ng-if="new_item" class="dropdown playlist list-group-item">
+                            <a href="#"><span class="playlist-name"><input class="form-control" ng-keyup="submitNew($event)"></span></a>
+                        </div>
+                        
+                        <div class="dropdown playlist list-group-item" ng-repeat="playlist in playlists._items | filter: query">
+                            <span class="badge" >{{ playlist.tracks.length }}</span>
+                            <a href="#" ng-click="go(playlist._id)"><span class="playlist-name">{{ playlist.name }}</span></a>
                         </div>
                     </div>
 
@@ -73,28 +103,8 @@
 
 
 
-   <div ng-controller="LoginController" id="login-modal" class="modal fade" style="" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-       <div class="modal-dialog">
-           <div class="modal-content">
-               <form id="login-form" action="/test" method="POST">
-                   <div class="modal-header">
-                       <h4 class="modal-title">Login</h4>
-                   </div>
-                   <div class="modal-body">
-                       <div class="form-group">
-                           <input type="text" id="login-name" class="form-control" placeholder="Login name" aria-describedby="login-name-addon" />
-                       </div>
-                       <div class="form-group">
-                           <input type="password" id="login-password" class="form-control" placeholder="***" aria-describedby="login-password-addon" />
-                       </div>
-                   </div>
-                   <div class="modal-footer">
-                       <button id="login-form-submit" type="submit" class="btn btn-primary">Login</button>
-                   </div>
-               </form>
-           </div><!-- /.modal-content -->
-       </div><!-- /.modal-dialog -->
-   </div><!-- /.modal -->
+
+          
 
 
 
@@ -144,10 +154,10 @@
     </script>
 
 
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular-route.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="/static/app/angular.js"></script>
+    <script src="/static/app/angular-route.js"></script>
+    <script src="/static/app/jquery.min.js"></script>
+    <script src="/static/app/bootstrap.min.js"></script>
     <script src="/static/app/app.js"></script>
     <script src="/static/app/rzslider.js"></script>
     <style>
@@ -164,7 +174,11 @@
             overflow-y:scroll;
         }
         #player-play-control .glyphicon {font-size:30px;}
-
+        .vertical-align {
+            display: inline-block;
+            vertical-align: middle;
+            float: none;
+        }
     </style>
 
 

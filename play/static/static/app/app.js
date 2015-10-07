@@ -1,15 +1,12 @@
 'use strict';
 
 
-var k = 0;
-
-
-
-
-
 
 var app = angular.module('PlayApp', ['ngRoute', 'rzModule'])
 app.value('apiUrl', '//localhost:8000/api')
+
+
+
 
 app.config(['$httpProvider', function ($httpProvider) {
     delete $httpProvider.defaults.headers.common['X-Requested-With'];
@@ -48,21 +45,48 @@ app.filter('duration', function() {
     }
 });
 
+app.controller('MainController', ['$scope', 'UserService', function($scope, UserService){
+    UserService.me();
+    $scope.userService = UserService
+}]);
 
-app.controller('LoginController', ['$scope', '$element', 'UserService', function($scope, $element, UserService) {
 
+app.controller('LoginController', ['$scope', 'UserService', function($scope, UserService) {
+    $scope.name = "";
+    $scope.password = "";
+    $scope.remember = false;
+    $scope.submit = function() {
+        UserService.login(function(data) {}, $scope.name, $scope.password, $scope.remember);
+        return false;
+    }
 }]);
 
 
 
-app.controller('PlaylistController', ['$scope', 'PlaylistRepository', 'TrackListService', function($scope, PlaylistRepository, TrackListService) {
+app.controller('PlaylistController', ['$scope', 'PlaylistRepository', 'TrackListService', 'UserService', function($scope, PlaylistRepository, TrackListService, UserService) {
+    $scope.new_item = 0
+    $scope.updatePlaylist = function() {
+        PlaylistRepository.getUserPlaylists(function(data) {$scope.playlists = data;}, UserService.user._id);
+    }
+
+    $scope.submitNew =  function($event) {
+        if($event.keyCode == 13) {
+            PlaylistRepository.createPlaylist(function() {
+                $scope.new_item = 0;
+                $event.srcElement.value = ''
+                $scope.updatePlaylist();
+            }, $event.srcElement.value);
+
+        }
+        
+    }
     $scope.go = function(playlist_id) {
          PlaylistRepository.getPlaylist(
             function (data) {TrackListService.setPlaylist(data)},
             playlist_id)
     }
-    $scope.playlist = null
-    PlaylistRepository.getPlaylists(function(data) {$scope.playlists = data;});
+    $scope.playlist = [];
+    $scope.updatePlaylist();
 }]);
 
 app.controller('TracksController', ['$scope', '$filter', 'TrackListService', 'TrackService', function($scope, $filter, TrackListService, TrackService) {
@@ -94,22 +118,33 @@ app.service('TrackService', function() {
 
 
 app.service('UserService', ['apiUrl', '$http' , function(apiUrl, $http) {
-    var user = null;
-    return {
-        login : function (username, password, remember) {
-            return $http.post(
-                apiUrl + '/users/login',
-                {username: username, password: password, remember: remember});
-        },
-        logout : function () {
-            return $http.post(
-                apiUrl + '/users/logout',
-                {username: username, password: password, remember: remember});
-        },
-        me: function () {
-            return user;
-        }
-    }
+    this.user = null;
+    var service = this;
+    this.login = function (callback, username, password, remember) {
+        $http.post(
+            apiUrl + '/me/login',
+            {username: username, password: password, remember: remember}).success(function(data){
+                service.user = data;
+                callback(data);
+            });
+    };
+    this.logout = function (callback) {
+        $http.post(
+            apiUrl + '/me/logout').success(function(data){
+                service.user = null;
+                callback(data);
+            });
+    };
+    this.me = function (callback) {
+        $http.get(apiUrl + '/me/').success(function(data) {
+            service.user = data;
+            if (typeof callback != 'undefined'){
+                callback(data);
+            }
+
+        });
+    };
+    
 }]);
 
 
@@ -130,7 +165,8 @@ app.service('CsrfRepository', ['apiUrl', '$http' , function(apiUrl, $http) {
 
 app.service('PlaylistRepository', function(apiUrl, $http) {
     this.getPlaylists = function (callback, where) {
-        $http.get(apiUrl + '/playlists?embedded={"tracks": 1, "owner": 1}&where=' + where).success(function(data){
+        where =  where ? '&where=' + JSON.stringify(where) : '';
+        $http.get(apiUrl + '/playlists?embedded={"tracks": 1, "owner": 1}' + where).success(function(data){
             callback(data);
         });
     };
@@ -141,6 +177,12 @@ app.service('PlaylistRepository', function(apiUrl, $http) {
         $http.get(apiUrl + '/playlists/'+ id +'/?embedded={"tracks": 1, "owner": 1}').success(function(data){
             callback (data);
         });
+    };
+    this.createPlaylist = function(callback, playlist_name){
+        $http.post(apiUrl + '/playlists/', {'name': playlist_name}).success(function(data){
+            callback(data);
+        });
+
     };
 });
 
@@ -168,7 +210,6 @@ app.directive('aplayer',function($interval) {
         link: function($scope, element, attrs){
         },
         controller: function($scope, TrackService, TracksRepository){
-            console.log(TrackService.track)
             $scope.positionSlider = 0
             $scope.volumeSlider = 50
             $scope.volumeIcon =

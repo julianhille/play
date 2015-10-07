@@ -55,6 +55,7 @@ def ensure_public_or_owner_on_get(request, lookup):
 def add_user_on_create(items):
     for item in items:
         item['owner'] = current_user._id
+        item.setdefault('tracks', [])
 
 
 @blueprint.hook('on_replace')
