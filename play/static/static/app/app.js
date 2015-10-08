@@ -46,15 +46,36 @@ app.filter('duration', function() {
 });
 
 app.controller('MainController', ['$scope', 'UserService', function($scope, UserService){
-
-    $scope.searchtext = ''
     $scope.userService = UserService
-    $scope.searchSubmit = function() {
-        console.log($scope.searchtext);
-    };
     UserService.me();
 }]);
 
+
+app.controller('SearchController', ['$scope', '$filter', 'TracksRepository', 'TrackService', 'TrackListService', function($scope, $filter, TracksRepository, TrackService, TrackListService){
+    $scope.searchtext = 'some_file';
+    $scope.tracks = [];
+    $scope.trackService = TrackService;
+    $scope.trackListService = TrackListService;
+    $scope.play = function(track_id) {
+        var track = $filter('getByProperty')('_id', track_id, $scope.tracks._items);
+        $scope.trackService.setTrack(track)
+    };
+    $scope.searchAsYouType = function() {
+        return;
+        if ($scope.searchtext) {
+            TracksRepository.search(function(data){
+                $scope.tracks=data;
+            }, $scope.searchtext, 3);
+        }
+    }
+    $scope.searchSubmit = function() {
+        if ($scope.searchtext) {
+
+            // @Todo(jhille): we need to update the playlist controller
+            TracksRepository.search(function(data){$scope.trackListService.setSearch(data);}, $scope.searchtext);
+        }
+    }
+}]);
 
 app.controller('LoginController', ['$scope', 'UserService', function($scope, UserService) {
     $scope.name = "";
@@ -97,8 +118,8 @@ app.controller('PlaylistController', ['$scope', 'PlaylistRepository', 'TrackList
 app.controller('TracksController', ['$scope', '$filter', 'TrackListService', 'TrackService', function($scope, $filter, TrackListService, TrackService) {
     $scope.trackListService = TrackListService;
     $scope.trackService = TrackService
-    $scope.play = function(track_id) {
-        var track = $filter('getByProperty')('_id', track_id, $scope.trackListService.trackList.tracks);
+    $scope.play = function(tracks, track_id) {
+        var track = $filter('getByProperty')('_id', track_id, tracks);
         $scope.trackService.setTrack(track)
     };
 }]);
@@ -108,9 +129,14 @@ app.service('TrackListService', function() {
     var trackListType = '';
     this.setPlaylist =  function(playlist) {
             this.trackList = playlist;
-            this.trackListType = 'playlist';
+            this.type = 'playlist';
     }
-    this.trackList = trackList
+    this.setSearch =  function(search) {
+            this.trackList = search;
+            this.type = 'search';
+    }
+    this.trackList = trackList;
+    this.type = trackListType;
 });
 
 
@@ -197,8 +223,18 @@ app.service('PlaylistRepository', function(apiUrl, $http) {
 
 
 app.service('TracksRepository', function(apiUrl, $http) {
+    this.search = function (callback, text, limit) {
+        var params = {'where': JSON.stringify({'$text': {'$search': text}})};
+        if (limit != null ) {
+            params['max_results'] = limit;
+        }
+
+        $http.get(apiUrl + '/tracks/', {'params': params}).success(function(data){
+               callback (data);
+        });
+    }
     this.getTrack = function (callback, id) {
-        $http.get(apiUrl + '/track/' + id).success(function(data){
+        $http.get(apiUrl + '/tracks/' + id).success(function(data){
                callback (data);
         });
     }
