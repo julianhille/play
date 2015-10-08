@@ -7,29 +7,70 @@
 <body>
 
     <div class="container-fluid full" ng-controller="MainController">
+        <nav class="navbar navbar-default" role="navigation" id="top-menu">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <span class="navbar-brand" href="#">Playme</span>
+            </div>
 
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div ng-if="userService.user" class="collapse navbar-collapse navbar-ex1-collapse">
 
-     <div ng-if="!userService.user" class="container-fluid" ng-controller="LoginController">
-           <form id="login-form" method="POST" ng-submit="submit()">
-               <div class="modal-header">
-                   <h4 class="modal-title">Login</h4>
-               </div>
-               <div class="modal-body">
-                   <div class="form-group">
-                       <input type="text" id="login-name" class="form-control" placeholder="Login name" aria-describedby="login-name-addon" ng-model="name" />
-                   </div>
-                   <div class="form-group">
-                       <input type="password" id="login-password" class="form-control" placeholder="***" aria-describedby="login-password-addon" ng-model="password" />
-                   </div>
-                    <div class="form-group">
-                       <input type="checkbox" id="login-remember" class="form-control"  aria-describedby="login-remember-addon" ng-model="remember" />
-                   </div>
-               </div>
-               <div class="modal-footer">
-                   <button id="login-form-submit" type="submit" class="btn btn-primary">Login</button>
-               </div>
-           </form>
-       </div>
+                    <ul class="nav navbar-nav">
+                        <li><a href="#" id="navbar-playlists">Playlists</a></li>
+                    </ul>
+                    <form id="search-form" class="navbar-form navbar-left" role="search" ng-submit="searchSubmit()">
+                        <div class="dropdown disabled">
+                            <div class="input-group" id="search-input-group" aria-haspopup="true" aria-expanded="true">
+                                <span class="input-group-addon" >
+                                    <span class=" glyphicon glyphicon-search"></span>
+                                 </span>
+                                <input type="text" ng-model="searchtext" id="search-text" class="form-control" placeholder="Search" aria-describedby="search-text" />
+                            </div>
+                            <ul id="search-suggest" class="dropdown-menu" role="menu" aria-labelledby="search-input-group"></ul>
+                            <button type="submit" class="btn btn-default">Submit</button>
+                        </div>
+                    </form>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="#">Link</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">me <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">{{ userService.user.name }}</a></li>
+                                <li role="presentation" class="divider"></li>
+                                <li><a href="#" id="logout" ng-click="userService.logout()">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+            </div><!-- /.navbar-collapse -->
+
+        </nav>
+        <div ng-if="!userService.user" class="container-fluid" ng-controller="LoginController">
+            <form id="login-form" method="POST" ng-submit="submit()">
+                  <div class="modal-header">
+                      <h4 class="modal-title">Login</h4>
+                  </div>
+                  <div class="modal-body">
+                      <div class="form-group">
+                          <input type="text" id="login-name" class="form-control" placeholder="Login name" aria-describedby="login-name-addon" ng-model="name" />
+                      </div>
+                      <div class="form-group">
+                          <input type="password" id="login-password" class="form-control" placeholder="***" aria-describedby="login-password-addon" ng-model="password" />
+                      </div>
+                       <div class="form-group">
+                          <input type="checkbox" id="login-remember" class="form-control"  aria-describedby="login-remember-addon" ng-model="remember" />
+                      </div>
+                  </div>
+                  <div class="modal-footer">
+                      <button id="login-form-submit" type="submit" class="btn btn-primary">Login</button>
+                  </div>
+            </form>
+        </div>
 
 
         <div class="" ng-if="userService.user">

@@ -46,8 +46,13 @@ app.filter('duration', function() {
 });
 
 app.controller('MainController', ['$scope', 'UserService', function($scope, UserService){
-    UserService.me();
+
+    $scope.searchtext = ''
     $scope.userService = UserService
+    $scope.searchSubmit = function() {
+        console.log($scope.searchtext);
+    };
+    UserService.me();
 }]);
 
 
@@ -125,14 +130,18 @@ app.service('UserService', ['apiUrl', '$http' , function(apiUrl, $http) {
             apiUrl + '/me/login',
             {username: username, password: password, remember: remember}).success(function(data){
                 service.user = data;
-                callback(data);
+                if (typeof callback != 'undefined'){
+                    callback(data);
+                }
             });
     };
     this.logout = function (callback) {
         $http.post(
             apiUrl + '/me/logout').success(function(data){
                 service.user = null;
-                callback(data);
+                if (typeof callback != 'undefined'){
+                    callback(data);
+                }
             });
     };
     this.me = function (callback) {
