@@ -11,7 +11,8 @@ def test_scan_dir(testapp_task, file_system):
         for name in os.listdir(path):
             yield GenericDirEntry(path, name)
 
-    testapp_task.backend.database.directories.insert({'path': '/tmp/media/Album/John Bovi'})
+    testapp_task.backend.database.directories.insert(
+        {'path': '/tmp/media/Album/John Bovi', 'parents': []})
     with patch('scandir.os', os), patch('scandir.listdir', os.listdir), \
             patch('scandir.stat', os.stat), patch('scandir.lstat', os.lstat),\
             patch('scandir.strerror', os.strerror), patch('scandir.islink', os.path.islink),\
@@ -36,7 +37,8 @@ def test_scan_not_existent_dir(testapp_task, file_system):
         for name in os.listdir(path):
             yield GenericDirEntry(path, name)
 
-    testapp_task.backend.database.directories.insert({'path': '/tmp/media/Album/Unknown'})
+    testapp_task.backend.database.directories.insert(
+        {'path': '/tmp/media/Album/Unknown', 'parents': []})
     with patch('scandir.os', os), patch('scandir.listdir', os.listdir),\
             patch('scandir.stat', os.stat), patch('scandir.lstat', os.lstat),\
             patch('scandir.strerror', os.strerror), patch('scandir.islink', os.path.islink),\

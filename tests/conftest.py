@@ -1,3 +1,4 @@
+from celery.backends.mongodb import MongoBackend
 from contextlib import contextmanager
 from fake_filesystem import FakeFilesystem
 import pytest
@@ -8,10 +9,12 @@ from flask.ext.login import AnonymousUserMixin
 from play.application.wsgi import application as api
 from play.task.application import application as task_api
 from play.models.users import LoginUser
+from play.mongo import ensure_indices
 
 
 @pytest.fixture(autouse=True)
 def testapp_api(request, humongous):
+    ensure_indices(humongous)
     with patch('pymongo.mongo_client', Mock(return_value=humongous)):
         factory = api
         marker = request.node.get_marker('app_factory')
@@ -35,7 +38,7 @@ def auth(testapp_api, user):
 
 @pytest.fixture(autouse=True)
 def testapp_task(request, humongous):
-    from celery.backends.mongodb import MongoBackend
+    ensure_indices(humongous)
     MongoBackend._get_database = Mock(return_value=humongous)
     factory = task_api
     marker = request.node.get_marker('app_factory')

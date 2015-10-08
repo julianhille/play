@@ -1,7 +1,7 @@
 import pymongo
 
 
-def ensure_indices(db): # nocov
+def ensure_indices(db):  # nocov
     # users
     db.users.ensure_index([('name', pymongo.DESCENDING)], unique=True, background=True)
 
