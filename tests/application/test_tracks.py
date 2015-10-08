@@ -111,3 +111,9 @@ def test_get_stream_id_found_invalid_file(testapp_api):
         with raises(AppError) as context:
             testapp_api.get('/stream/adf19b92e21e1560a7dd0000')
     assert '500 INTERNAL SERVER ERROR' in str(context.value)
+
+
+def test_fulltext_search(testapp_api):
+    with auth(testapp_api, user='user_active'):
+        response = testapp_api.get('/tracks/?where={"$text": {"$search":"some_fil"}}')
+    assert len(response.json_body['_items']) == 1
