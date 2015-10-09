@@ -13,7 +13,8 @@ SCHEMA = {
         'name': {
             'type': 'string',
             'maxlength': 30,
-            'required': True
+            'required': True,
+            'minlength': 3,
         },
         'length': {
             'type': 'integer'
