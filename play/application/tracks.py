@@ -9,7 +9,7 @@ SCHEMA = {
     'public_item_methods': [],
     'item_methods': ['GET'],
     'resource_methods': ['GET'],
-    'allowed_roles': ['user'],
+    'allowed_roles': ['user', 'admin'],
     'schema': {
         'artist': {
             'type': 'objectid',

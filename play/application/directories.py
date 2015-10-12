@@ -41,7 +41,12 @@ SCHEMA = {
         'name': {
             'type': 'string',
             'readonly': True
-        }
+        },
+        'scanned': {
+            'type': 'date',
+            'required': True,
+            'roles': ['admin']
+        },
     }
 }
 
