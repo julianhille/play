@@ -67,6 +67,7 @@ def scan_audio(file_path):
         'name': path.splitext(file_name)[0],
         'path': file_path,
         'directory': directory['_id'],
+        'parent_directories': directory['parents'] + directory['_id'],
         'size': size,
         'hash': hash_file(file_path, size)
     }
