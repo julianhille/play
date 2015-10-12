@@ -39,7 +39,7 @@ class LoginUser(UserMixin):
         if not roles:
             return True
 
-        return set(self.roles).intersection(roles)
+        return bool(set(self.roles).intersection(roles))
 
     @staticmethod
     def get_by_name(db, username, allowed_roles=None):

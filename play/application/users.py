@@ -1,3 +1,4 @@
+from flask.ext.login import current_user
 from play.application.blueprint import Blueprint
 
 
@@ -41,9 +42,6 @@ blueprint = Blueprint('users', __name__, SCHEMA, url_prefix='/users')
 
 @blueprint.hook('on_pre_GET')
 def add_search(request, lookup):
-    print('add search', lookup)
-    from flask.ext.login import current_user
-    print(current_user.roles)
     if lookup and not current_user.has_role(['admin']):
         lookup.update({'active': True, 'roles': {'$in': ['user']}})
 
