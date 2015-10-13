@@ -1,5 +1,5 @@
 import io
-from pytest import raises
+from pytest import raises, mark
 from unittest.mock import patch, MagicMock, Mock
 from webtest import AppError
 
@@ -30,6 +30,19 @@ def test_get_item_user(testapp_api):
     assert response.status_code == 200
 
 
+def test_get_inactive_item_user(testapp_api):
+    with auth(testapp_api, user='user_active'):
+        with raises(AppError) as context:
+            testapp_api.get('/tracks/adf19b92e21e1560a7dd0001')
+    assert '404 NOT FOUND' in str(context.value)
+
+
+def test_get_inactive_item_admin(testapp_api):
+    with auth(testapp_api, user='admin_active'):
+        response = testapp_api.get('/tracks/adf19b92e21e1560a7dd0001')
+    assert response.status_code == 200
+
+
 def test_post_item_user(testapp_api):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
         with auth(testapp_api, user='user_active'):
@@ -43,7 +56,7 @@ def test_put_item_user(testapp_api):
         with auth(testapp_api, user='user_active'):
             with raises(AppError) as context:
                 testapp_api.put_json('/tracks/adf19b92e21e1560a7dd0000', {})
-    assert '405 METHOD NOT ALLOWED' in str(context.value)
+    assert '401 UNAUTHORIZED' in str(context.value)
 
 
 def test_patch_item_user(testapp_api):
@@ -51,7 +64,53 @@ def test_patch_item_user(testapp_api):
         with auth(testapp_api, user='user_active'):
             with raises(AppError) as context:
                 testapp_api.patch_json('/tracks/adf19b92e21e1560a7dd0000', {})
+    assert '401 UNAUTHORIZED' in str(context.value)
+
+
+@mark.parametrize('user', ['user_active', 'admin_active'])
+def test_patch_resource_user(testapp_api, user):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user=user):
+            with raises(AppError) as context:
+                testapp_api.patch_json('/tracks', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
+
+
+@mark.parametrize('user', ['user_active', 'admin_active'])
+def test_put_resource_user(testapp_api, user):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user=user):
+            with raises(AppError) as context:
+                testapp_api.put_json('/tracks', {})
+    assert '405 METHOD NOT ALLOWED' in str(context.value)
+
+
+@mark.parametrize('user', ['user_active', 'admin_active'])
+def test_post_resource_user(testapp_api, user):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user=user):
+            with raises(AppError) as context:
+                testapp_api.post_json('/tracks', {})
+    assert '405 METHOD NOT ALLOWED' in str(context.value)
+
+
+@mark.parametrize('user', ['user_active', 'admin_active'])
+def test_delete_resource_user(testapp_api, user):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user=user):
+            with raises(AppError) as context:
+                testapp_api.delete('/tracks')
+    assert '405 METHOD NOT ALLOWED' in str(context.value)
+
+
+def test_patch_item_admin(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user='admin_active'):
+            response_get = testapp_api.get('/tracks/adf19b92e21e1560a7dd0000')
+            response = testapp_api.patch_json(
+                '/tracks/adf19b92e21e1560a7dd0000', {'active': True},
+                headers=[('If-Match', response_get.headers['ETag'])])
+    assert response.status_code == 200
 
 
 def test_post_item_no_auth(testapp_api):
@@ -71,7 +130,28 @@ def test_put_item_no_auth(testapp_api):
 def test_patch_item_no_auth(testapp_api):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
         with raises(AppError) as context:
+            testapp_api.patch_json('/tracks/adf19b92e21e1560a7dd0000', {})
+    assert '401 UNAUTHORIZED' in str(context.value)
+
+
+def test_patch_resource_no_auth(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with raises(AppError) as context:
             testapp_api.patch_json('/tracks', {})
+    assert '405 METHOD NOT ALLOWED' in str(context.value)
+
+
+def test_put_resource_no_auth(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with raises(AppError) as context:
+            testapp_api.put_json('/tracks', {})
+    assert '405 METHOD NOT ALLOWED' in str(context.value)
+
+
+def test_delete_resource_no_auth(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with raises(AppError) as context:
+            testapp_api.delete_json('/tracks', {})
     assert '405 METHOD NOT ALLOWED' in str(context.value)
 
 

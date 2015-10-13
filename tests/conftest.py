@@ -31,7 +31,6 @@ def auth(testapp_api, user):
         nonlocal user
         return (LoginUser.get_by_name(testapp_api.app.data.driver.db.users, user) or
                 AnonymousUserMixin())
-
     with patch.object(testapp_api.app.login_manager, 'request_callback', check_auth):
         yield
 

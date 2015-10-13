@@ -15,4 +15,4 @@ def test_multiapp_dispatching():
 
     with raises(AppError) as response_api:
         app.get('/api/users/')
-    assert '405 METHOD NOT ALLOWED' in str(response_api.value)
+    assert '401 UNAUTHORIZED' in str(response_api.value)
