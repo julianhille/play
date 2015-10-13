@@ -10,9 +10,9 @@ script:
   - tox -e $TOX_ENV
 before_install:
   - "sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10"
-  - "echo "deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list"
+  - "echo \"deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.0 main\" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list"
   - "sudo apt-get update"
-  - "sudo apt-get install -y mongodb-org-server"
+  - "sudo apt-get -y --force-yes install mongodb-org-server"
 before_script:
   - "until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done"
 install: pip install tox
