@@ -16,7 +16,8 @@ SCHEMA = {
             'required': True
         },
         'length': {
-            'type': 'integer'
+            'type': 'integer',
+            'readonly': True,
         },
         'metadata': {
             'type': 'dict'
