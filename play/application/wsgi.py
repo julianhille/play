@@ -1,4 +1,4 @@
-from flask import current_app, Response
+from flask import current_app
 from flask.ext.login import LoginManager
 from flask.ext.wtf.csrf import CsrfProtect
 

@@ -63,7 +63,7 @@ def scan_audio(file_path):
         return
     file_name = path.basename(file_path)
     size = path.getsize(file_path)
-    print(directory)
+
     insert = {
         'name': path.splitext(file_name)[0],
         'path': file_path,
