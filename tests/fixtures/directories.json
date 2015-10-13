@@ -22,7 +22,7 @@
   {
     "_id": {"$oid": "ddff19b92e21e1560a7dd002"},
     "path": "/var/media/path/subfolder/subfolder",
-    "name": "subfolder",
+    "name": "subfolder subfolder",
     "parent": {"$oid": "ddff19b92e21e1560a7dd001"},
     "parents": [
       {"$oid": "ddff19b92e21e1560a7dd000"},

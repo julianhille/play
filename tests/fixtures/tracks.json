@@ -1,6 +1,7 @@
 [
     {
         "_id": {"$oid": "adf19b92e21e1560a7dd0000"},
+        "active": true,
         "metadata": {},
         "length": 100,
         "sample_rate": 44100,
@@ -9,8 +10,30 @@
         "size": 3145728,
         "name": "some_file.mp3",
         "directory": {"$oid": "ddff19b92e21e1560a7dd000"},
+        "parent_directories": [{"$oid": "ddff19b92e21e1560a7dd000"}],
         "file": "/var/media/some_file.mp3",
         "hash": "somesha1",
+        "scanned": {"$date": "2015-05-09T00:00:00.000"},
+        "_created_date": {"$date": "2015-05-01T00:00:00.000"},
+        "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
+    },
+    {
+        "_id": {"$oid": "adf19b92e21e1560a7dd0001"},
+        "active": false,
+        "metadata": {},
+        "length": 100,
+        "sample_rate": 44100,
+        "bitrate": 192,
+        "lossless": true,
+        "size": 3145728,
+        "name": "ano thing",
+        "directory": {"$oid": "ddff19b92e21e1560a7dd000"},
+        "parent_directories": [
+              {"$oid": "ddff19b92e21e1560a7dd000"},
+              {"$oid": "ddff19b92e21e1560a7dd001"},
+              {"$oid": "ddff19b92e21e1560a7dd002"}],
+        "file": "/var/media/music.mp3",
+        "hash": "somesha2",
         "scanned": {"$date": "2015-05-09T00:00:00.000"},
         "_created_date": {"$date": "2015-05-01T00:00:00.000"},
         "_updated_date": {"$date": "2015-05-01T00:00:00.000"}

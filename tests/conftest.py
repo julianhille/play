@@ -6,8 +6,8 @@ from unittest.mock import Mock, patch
 from webtest import TestApp
 from flask.ext.login import AnonymousUserMixin
 
-from play.application.wsgi import application as api
-from play.task.application import application as task_api
+from play.application.wsgi import create_app as api
+from play.task.application import application as task_app
 from play.models.users import LoginUser
 from play.mongo import ensure_indices
 
@@ -15,14 +15,14 @@ from play.mongo import ensure_indices
 @pytest.fixture(autouse=True)
 def testapp_api(request, humongous):
     ensure_indices(humongous)
-    with patch('pymongo.mongo_client', Mock(return_value=humongous)):
+    with patch('flask.ext.pymongo.MongoClient', Mock(return_value={'play': humongous})):
         factory = api
         marker = request.node.get_marker('app_factory')
         if marker:
             factory = marker.kwargs.get('factory', api)
-    factory.debug = True
-
-    return TestApp(factory)
+        app = factory()
+    app.debug = True
+    return TestApp(app)
 
 
 @contextmanager
@@ -31,7 +31,6 @@ def auth(testapp_api, user):
         nonlocal user
         return (LoginUser.get_by_name(testapp_api.app.data.driver.db.users, user) or
                 AnonymousUserMixin())
-
     with patch.object(testapp_api.app.login_manager, 'request_callback', check_auth):
         yield
 
@@ -40,10 +39,11 @@ def auth(testapp_api, user):
 def testapp_task(request, humongous):
     ensure_indices(humongous)
     MongoBackend._get_database = Mock(return_value=humongous)
-    factory = task_api
+    factory = task_app
     marker = request.node.get_marker('app_factory')
     if marker:
-        factory = marker.kwargs.get('factory', task_api)
+        factory = marker.kwargs.get('factory', task_app)
+
     return factory
 
 

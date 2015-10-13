@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+</head>
+<body ng-app="PlayAdminApp">
+
+
+    <div class="full">
+        <nav class="navbar navbar-default" role="navigation" id="top-menu">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <span class="navbar-brand" href="#">Playme</span>
+            </div>
+            <ul class="nav navbar-nav">
+                <li><a href="#/directories" id="navbar-playlists">Directories</a></li>
+                <li><a href="#/tracks" id="navbar-playlists">Tracks</a></li>
+                <li><a href="#/users" id="navbar-playlists">Users</a></li>
+            </ul>
+
+        </nav>
+        <div ng-view class="container-fluid"></div>
+    </div>
+    <script src="/static/app/angular.js"></script>
+    <script src="/static/app/angular-route.js"></script>
+    <script src="/static/app/angular-ui.js"></script>
+    <script src="/static/app/angular-resource.js"></script>
+    <script src="/static/app/admin.js"></script>
+
+
+
+    <script type="text/ng-template" id="templates/users_edit.html">
+        <form class="form" ng-submit="save($event)">
+            <div class="form-group">
+                <label for="user_name">Login name</label>
+                <input type="text" ng-model="user.name" class="form-control" id="user_name" placeholder="Name"/>
+            </div>
+            <div class="form-group">
+                <label for="user_password">Password</label>
+                <input type="password" ng-model="user.password" class="form-control" id="user_password" placeholder="Password"/>
+            </div>
+            <div class="checkbox">
+                <label for="user_active">
+                    <input type="checkbox" value="1" ng-model="user.active" id="user_active"/> Active state
+                </label>
+            </div>
+            <ul>
+                <li ng-repeat="role in user.roles">{{ role }}<span class="glyphicon glyphicon-trash" ng-click="deleteRole($index)"></span></li>
+                <li ><input type="text" ng-submit="addRole($event)" ng-keydown="addRole($event)" ng-model="form.role" /></li>
+            </ul>
+            <button type="submit" >{{user._id ? 'Save' : 'Create'}}</button>
+        </form>
+    </script>
+
+    <script type="text/ng-template" id="templates/directories/index.html">
+        <a class="btn btn-default" href="#/directories/new" role="button">New</a>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Path</th>
+                    <th>Last scan</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th>Edit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="directory in directories._items">
+                    <td>{{ directory.name }}</td>
+                    <td>{{ directory.path }}</td>
+                    <td>{{ directory.scanned }}</td>
+                    <td>{{ directory._created }}</td>
+                    <td>{{ directory._updated }}</td>
+                    <td>
+                        <span class="glyphicon glyphicon-trash" ng-click="delete(directory)"></span>
+                        <span class="glyphicon glyphicon-edit" ng-click="go(directory, 'edit')"></span>
+                        <span class="glyphicon glyphicon-repeat" ng-click="triggerRescan(directory)"></span>
+                        <span class="glyphicon glyphicon-info-sign" ng-click="go(directory)"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </script>
+
+
+
+    <script type="text/ng-template" id="templates/directories/edit.html">
+        <form class="form" ng-submit="save($event)">
+            <div class="form-group">
+                <label for="directory_name">Directory name</label>
+                <input type="text" ng-model="directory.name" class="form-control" id="directory_name" placeholder="Name" />
+            </div>
+            <div class="form-group">
+                <label for="directory_path">Directory Path</label>
+                <input type="text" ng-model="directory.path" class="form-control" id="directory_path" placeholder="path" />
+            </div>
+            <button class="btn btn-default" type="submit">{{ directory._id ? "Save" : "Create" }}</button>
+
+        </form>
+    </script>
+
+
+    <script type="text/ng-template" id="templates/directories/user.html">
+        <h2> Directory infos</h2>
+        <span> {{ directory.name }} </span>
+        <span> {{ directory.path }} </span>
+        <span> {{ directory.scanned }} </span>
+        <span> {{ directory._created }} </span>
+        <span> {{ directory._updated }} </span>
+        <button class="btn btn-default" ng-click="go(directory, 'edit')">Edit</button>
+        <span>Track Count: {{ tracks._meta.total }} </span>
+    </script>
+
+
+
+    <script type="text/ng-template" id="templates/users.html">
+        <a class="btn btn-default" href="#/users/new" role="button">New</a>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Active</th>
+                    <th>Roles</th>
+                    <th>Last login</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th>Edit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="user in users._items">
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.active }}</td>
+                    <td>
+                        <div class="btn-group" uib-dropdown>
+                            <button type="button" class="btn btn-primary" uib-dropdown-toggle>
+                                Roles <span class="caret"></span>
+                            </button>
+                          <ul class="uib-dropdown-menu" role="menu">
+                                <li role="menuitem" ng-repeat="role in user.roles"><a>{{ role }}</a></li>
+                          </ul>
+                        </div>
+
+
+
+                    </td>
+                    <td>{{ user.last_login }}</td>
+                    <td>{{ user._created }}</td>
+                    <td>{{ user._updated }}</td>
+                    <td>
+                        <span class="glyphicon glyphicon-trash" ng-click="delete(user)"></span>
+                        <span ng-if="user.active == true" ng-click="setActiveState(user, false)" class="glyphicon glyphicon-ok"></span>
+                        <span ng-if="user.active !== true" ng-click="setActiveState(user, true)" class="glyphicon glyphicon-remove"></span>
+                        <span class="glyphicon glyphicon-edit" ng-click="go(user)"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </script>
+
+
+    <script type="text/ng-template" id="templates/tracks.html">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Directory</th>
+                    <th>Media Info</th>
+                    <th>Scanned</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th>Edit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="track in tracks._items">
+                    <td>{{ track.name }}</td>
+                    <td>{{ track._embedded.directory.name }}</td>
+                    <td>Media Info</td>
+                    <td>{{ track.scanned }}</td>
+                    <td>{{ track._created }}</td>
+                    <td>{{ track._updated }}</td>
+                    <td>
+                        <span ng-if="track.active == true" ng-click="setActiveState(track, false)" class="glyphicon glyphicon-ok"></span>
+                        <span ng-if="track.active !== true" ng-click="setActiveState(track, true)" class="glyphicon glyphicon-remove"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </script>
+</body>
+</html>

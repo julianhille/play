@@ -47,7 +47,6 @@ blueprint = Blueprint('me', __name__, SCHEMA, url_prefix='/me')
 
 @blueprint.after_request
 def add_csrf_token(response):
-    print(request.headers, request.cookies)
     if not request.cookies.get('XSRF-TOKEN'):
         response.set_cookie('XSRF-TOKEN', generate_csrf())
     return response

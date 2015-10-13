@@ -36,7 +36,7 @@ def directory_scan(dir_path):
         if item.is_dir():
             insert = {
                 'parent': directory['_id'],
-                'parents': directory['parents'] + [directory['_id']],
+                'parents': directory.get('parents', []) + [directory['_id']],
                 'name': item.name,
                 'path': path.abspath(item.path),
                 'scanned': datetime.now(),
@@ -63,10 +63,12 @@ def scan_audio(file_path):
         return
     file_name = path.basename(file_path)
     size = path.getsize(file_path)
+
     insert = {
         'name': path.splitext(file_name)[0],
         'path': file_path,
         'directory': directory['_id'],
+        'parent_directories': directory.get('parents', []) + [directory['_id']],
         'size': size,
         'hash': hash_file(file_path, size)
     }
