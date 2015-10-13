@@ -11,7 +11,7 @@ def ensure_indices(db):  # nocov
 
     # directories
     db.directories.ensure_index([('path', pymongo.ASCENDING)], background=True, unique=True)
-    db.directories.ensure_index([('name', pymongo.ASCENDING)], background=True, unique=True)
+    db.directories.ensure_index([('name', pymongo.ASCENDING)], background=True)
 
     # playlists
     db.playlists.ensure_index([('name', pymongo.TEXT)], background=True)
