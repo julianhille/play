@@ -1,6 +1,5 @@
-import io
 from pytest import raises, mark, config
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import patch, Mock
 from webtest import AppError
 
 from tests.conftest import auth
@@ -175,13 +174,11 @@ def test_get_stream_id_not_found(testapp_api):
     assert '404 NOT FOUND' in str(context.value)
 
 
-@patch('play.application.tracks.send_file')
+@patch('play.application.tracks.send_file_partial')
 def test_get_stream_id_found_valid_file(send_file, testapp_api):
     send_file.return_value = 'RESPONSE'
     with auth(testapp_api, user='user_active'):
-        with patch('play.application.tracks.open', MagicMock(spec=io.IOBase), create=True) as open_:
-            response = testapp_api.get('/stream/adf19b92e21e1560a7dd0000')
-    open_.assert_called_once_with('/var/media/some_file.mp3', 'rb')
+        response = testapp_api.get('/stream/adf19b92e21e1560a7dd0000')
     assert send_file.call_count == 1
     assert response.body == b'RESPONSE'
 

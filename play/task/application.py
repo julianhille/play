@@ -2,7 +2,7 @@ from celery import Celery, current_app
 from celery.utils.log import get_task_logger
 
 from datetime import datetime
-from os import path
+import os
 import re
 from scandir import scandir
 
@@ -21,13 +21,13 @@ file_ext = ('.mp3')
 
 @application.task
 def directory_scan(dir_path):
-    dir_path = path.abspath(dir_path)
+    dir_path = os.path.abspath(dir_path)
     directory = current_app.backend.database.directories.find_one({'path': dir_path})
     logger.info("Processing:  Directory: '{}'".format(directory))
     if not directory:
         logger.warn('Directory: {} couldn\'t be found in database'.format(dir_path))
         return
-    if not path.exists(dir_path):
+    if not os.path.exists(dir_path):
         current_app.backend.database.directories.update(
             {'path': dir_path}, {'$set': {'status': False}})
         logger.warn('Directory: {} couldn\'t be found on filesystem'.format(dir_path))
@@ -38,7 +38,7 @@ def directory_scan(dir_path):
                 'parent': directory['_id'],
                 'parents': directory.get('parents', []) + [directory['_id']],
                 'name': item.name,
-                'path': path.abspath(item.path),
+                'path': os.path.abspath(item.path),
                 'scanned': datetime.now(),
                 'status': True
             }
@@ -52,18 +52,18 @@ def directory_scan(dir_path):
 @application.task
 def scan_audio(file_path):
     logger.info("Processing:  File: '{}'".format(file_path))
-    if not path.isfile(file_path):
+    if not os.path.isfile(file_path):
         logger.warn('File: {} couldn\'t be found'.format(file_path))
         return
-    file_path = path.abspath(file_path)
-    directory_path = path.abspath(path.dirname(file_path))
+    file_path = os.path.abspath(file_path)
+    directory_path = os.path.abspath(os.path.dirname(file_path))
     directory = current_app.backend.database.directories.find_one({'path': directory_path})
     if not directory:
         logger.warn('Files: {} parent directory couldn\'t be found'.format(file_path))
         return
-    file_name = path.basename(file_path)
-    size = path.getsize(file_path)
-    name = path.splitext(file_name)[0]
+    file_name = os.path.basename(file_path)
+    size = os.path.getsize(file_path)
+    name = os.path.splitext(file_name)[0]
     search = re.sub('([^0-9a-zA-Z]+)', ' ', name)
     insert = {
         'name': name,
@@ -75,4 +75,3 @@ def scan_audio(file_path):
         'hash': hash_file(file_path, size)
     }
     current_app.backend.database.tracks.update({'path': file_path}, insert, upsert=True)
-    logger.warn('File: {} couldn\'t be found'.format(file_path))
