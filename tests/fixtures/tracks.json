@@ -9,6 +9,7 @@
         "lossless": true,
         "size": 3145728,
         "name": "some_file.mp3",
+        "search": "some file",
         "directory": {"$oid": "ddff19b92e21e1560a7dd000"},
         "parent_directories": [{"$oid": "ddff19b92e21e1560a7dd000"}],
         "file": "/var/media/some_file.mp3",
@@ -27,6 +28,7 @@
         "lossless": true,
         "size": 3145728,
         "name": "ano thing",
+        "search": "ano thing",
         "directory": {"$oid": "ddff19b92e21e1560a7dd000"},
         "parent_directories": [
               {"$oid": "ddff19b92e21e1560a7dd000"},
