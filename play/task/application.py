@@ -3,7 +3,7 @@ from celery.utils.log import get_task_logger
 
 from datetime import datetime
 from os import path
-
+import re
 from scandir import scandir
 
 from .utils import hash_file
@@ -63,9 +63,11 @@ def scan_audio(file_path):
         return
     file_name = path.basename(file_path)
     size = path.getsize(file_path)
-
+    name = path.splitext(file_name)[0]
+    search = re.sub('([^0-9a-zA-Z]+)', ' ', name)
     insert = {
-        'name': path.splitext(file_name)[0],
+        'name': name,
+        'search': search,
         'path': file_path,
         'directory': directory['_id'],
         'parent_directories': directory.get('parents', []) + [directory['_id']],

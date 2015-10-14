@@ -197,5 +197,5 @@ def test_get_stream_id_found_invalid_file(testapp_api):
              reason="mongomock does not support $text")
 def test_fulltext_search(testapp_api):
     with auth(testapp_api, user='user_active'):
-        response = testapp_api.get('/tracks/?where={"$text": {"$search":"some_fil"}}')
+        response = testapp_api.get('/tracks/?where={"$text": {"$search":"file"}}')
     assert len(response.json_body['_items']) == 1

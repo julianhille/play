@@ -6,7 +6,7 @@ def ensure_indices(db):  # nocov
     db.users.ensure_index([('name', pymongo.DESCENDING)], unique=True, background=True)
 
     # tracks
-    db.tracks.ensure_index([('name', pymongo.TEXT)], background=True)
+    db.tracks.ensure_index([('search', pymongo.TEXT)], background=True)
     db.tracks.ensure_index([('hash', pymongo.DESCENDING)], background=True)
 
     # directories
