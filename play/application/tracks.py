@@ -1,8 +1,9 @@
 from bson import ObjectId
-from flask import abort, current_app, send_file
+from flask import abort, current_app
 from flask.ext.login import current_user
 
 from play.application.blueprint import Blueprint
+from play.application.application import send_file_partial
 
 
 SCHEMA = {
@@ -67,14 +68,12 @@ def stream(track_id):
     lookup = {'_id': ObjectId(track_id)}
     if not current_user.has_role(['admin']):
         lookup['active'] = True
-    track = current_app.data.driver.db['tracks'].find_one(lookup, {'file': 1})
+    track = current_app.data.driver.db['tracks'].find_one(lookup, {'path': 1, 'hash': 1})
     if not track:
         abort(404)
 
     try:
-        with open(track['file'], "rb") as fp:
-            return send_file(fp, mimetype='audio/mpeg',
-                             attachment_filename=str(track_id))
-    except IOError:
+        return send_file_partial(track['path'], track['hash'])
+    except:
         pass
     abort(500)

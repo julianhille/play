@@ -8,7 +8,7 @@ SCHEMA = {
     'public_item_methods': [],
     'item_methods': ['GET', 'PUT', 'PATCH', 'DELETE'],
     'resource_methods': ['GET', 'POST'],
-    'allowed_roles': ['user'],
+    'allowed_roles': ['user', 'admin'],
     'schema': {
         'name': {
             'type': 'string',

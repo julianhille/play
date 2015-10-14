@@ -16,7 +16,7 @@ def test_scan_dir(testapp_task, file_system):
     with patch('scandir.os', os), patch('scandir.listdir', os.listdir), \
             patch('scandir.stat', os.stat), patch('scandir.lstat', os.lstat),\
             patch('scandir.strerror', os.strerror), patch('scandir.islink', os.path.islink),\
-            patch('scandir.join', os.path.join), patch('play.task.application.path', os.path), \
+            patch('scandir.join', os.path.join), patch('play.task.application.os', os), \
             patch('play.task.application.scandir', scandir):
         with patch('play.task.application.scan_audio.delay') as scan,\
                 patch('celery.app.task.Task.delay') as delay:
@@ -71,7 +71,7 @@ def test_scan_audio(testapp_task, file_system):
     testapp_task.backend.database.tracks.remove({})
     testapp_task.backend.database.directories.insert(
         {'parents': [], 'path': '/tmp/media/Album/John Bovi'})
-    with patch('play.task.application.path', os.path),\
+    with patch('play.task.application.os', os),\
             patch('play.task.utils.open', open_, create=True):
         application.scan_audio('/tmp/media/Album/John Bovi/01.mp3')
     assert testapp_task.backend.database.directories.find().count() == 1
@@ -83,7 +83,7 @@ def test_scan_audio_missing_directory(testapp_task, file_system):
     open_ = FakeFileOpen(file_system)
     testapp_task.backend.database.directories.remove({})
     testapp_task.backend.database.tracks.remove({})
-    with patch('play.task.application.path', os.path),\
+    with patch('play.task.application.os', os),\
             patch('play.task.utils.open', open_, create=True):
         application.scan_audio('/tmp/media/Album/John Bovi/01.mp3')
     assert testapp_task.backend.database.directories.find().count() == 0
@@ -97,7 +97,7 @@ def test_scan_audio_missing_file(testapp_task, file_system):
         {'parents': [], 'path': '/tmp/media/Album/John Bovi'})
     os = FakeOsModule(file_system)
     open_ = FakeFileOpen(file_system)
-    with patch('play.task.application.path', os.path),\
+    with patch('play.task.application.os', os),\
             patch('play.task.utils.open', open_, create=True):
         application.scan_audio('/tmp/media/Album/John Bovi/01111.mp3')
     assert testapp_task.backend.database.directories.find().count() == 1

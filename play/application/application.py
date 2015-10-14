@@ -1,10 +1,12 @@
 from eve import Eve
 from eve.io import mongo
 from eve.utils import config
-from flask import Config
+from flask import Config, request, send_file, Response
 from flask.helpers import get_root_path
 from flask.ext.login import current_user
-from os import path
+import mimetypes
+import os
+import re
 
 from play import default_settings
 from play.application.auth import SessionAuth
@@ -16,8 +18,8 @@ class Validator(mongo.Validator):
         if not isinstance(roles, list):
             self._error(field, 'Schema error "%s" must be a list' % field)
 
-    def _validate_path(self, path_value, field, value):
-        if not path.exists(value):
+    def _validate_path(self, path, field, value):
+        if bool(path) is True and not os.path.exists(value):
             self._error(field, 'File path must exist')
 
 
@@ -64,3 +66,39 @@ class Application(object):
     def register_blueprint(self, blueprint):
         self._blueprints.append(blueprint)
         self.settings['DOMAIN'][blueprint.name] = blueprint.domain
+
+
+def send_file_partial(path, etag):
+    range_header = request.headers.get('Range', None)
+    if not range_header:
+        rv = send_file(path)
+        rv.set_etag(etag)
+        return rv
+
+    size = os.path.getsize(path)
+    byte1, byte2 = 0, None
+
+    m = re.search('(\d+)-(\d*)', range_header)
+    g = m.groups()
+
+    if g[0]:
+        byte1 = int(g[0])
+    if g[1]:
+        byte2 = int(g[1])
+
+    length = size - byte1
+    if byte2 is not None:
+        length = byte2 - byte1
+
+    data = None
+    with open(path, 'rb') as f:
+        f.seek(byte1)
+        data = f.read(length)
+
+    rv = Response(
+        data, 206, mimetype=mimetypes.guess_type(path)[0],
+        direct_passthrough=True)
+    rv.set_etag(etag)
+    rv.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(byte1, byte1 + length - 1, size))
+    rv.headers.add('Cache-Control', 'no-cache')
+    return rv
