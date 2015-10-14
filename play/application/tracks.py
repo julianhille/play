@@ -65,7 +65,7 @@ def stream(track_id):
     if not current_user.is_authenticated:
         abort(401)
     lookup = {'_id': ObjectId(track_id)}
-    if 'admin' not in current_user.roles:
+    if not current_user.has_role(['admin']):
         lookup['active'] = True
     track = current_app.data.driver.db['tracks'].find_one(lookup, {'file': 1})
     if not track:

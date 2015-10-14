@@ -4,6 +4,7 @@ from eve.utils import config
 from flask import Config
 from flask.helpers import get_root_path
 from flask.ext.login import current_user
+from os import path
 
 from play import default_settings
 from play.application.auth import SessionAuth
@@ -13,7 +14,11 @@ class Validator(mongo.Validator):
 
     def _validate_roles(self, roles, field, value):
         if not isinstance(roles, list):
-            self._error(field, "Schema error '%s' must be a list" % field)
+            self._error(field, 'Schema error "%s" must be a list' % field)
+
+    def _validate_path(self, path_value, field, value):
+        if not path.exists(value):
+            self._error(field, 'File path must exist')
 
 
 class Mongo(mongo.Mongo):

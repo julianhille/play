@@ -1,4 +1,5 @@
 from bson import ObjectId
+from fake_filesystem import FakeOsModule
 from pytest import raises
 from unittest.mock import Mock, patch
 from webtest import AppError
@@ -64,37 +65,52 @@ def test_get_item_with_embedding_user(testapp_api):
     assert response.json_body['parent']['name'] == 'path'
 
 
-def test_post_item_admin(testapp_api):
+def test_post_item_dir_exists_admin(testapp_api, file_system):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
-        with auth(testapp_api, user='admin_active'):
-            response = testapp_api.post_json(
-                '/directories', {'path': '/abc/123', 'name': 'some name', 'parent': None})
+        with patch('play.application.application.path', FakeOsModule(file_system).path):
+            with auth(testapp_api, user='admin_active'):
+                response = testapp_api.post_json(
+                    '/directories', {'path': '/tmp/media/Album', 'name': 'some name',
+                                     'parent': None})
     assert response.status_code == 201
 
 
-@patch('play.application.directories.directory_scan')
-def test_put_item_admin(scan, testapp_api):
+def test_post_item_dir_not_exists_admin(testapp_api, file_system):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
-        with auth(testapp_api, user='admin_active'):
-            response_get = testapp_api.get('/directories/ddff19b92e21e1560a7dd000')
-            response = testapp_api.put_json(
-                '/directories/ddff19b92e21e1560a7dd000',
-                {'path': '/abc/123', 'name': 'new name', 'parent': None},
-                headers=[('If-Match', response_get.headers['ETag'])])
-    scan.delay.assert_called_once_with('/abc/123')
+        with patch('play.application.application.path', FakeOsModule(file_system).path):
+            with auth(testapp_api, user='admin_active'):
+                with raises(AppError) as context:
+                    testapp_api.post_json(
+                        '/directories', {'path': '/tmp/NOTTHERE', 'name': 'some name',
+                                         'parent': None})
+    assert '422 UNPROCESSABLE ENTITY' in str(context.value)
+
+
+@patch('play.application.directories.directory_scan')
+def test_put_item_admin(scan, testapp_api, file_system):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with patch('play.application.application.path', FakeOsModule(file_system).path):
+            with auth(testapp_api, user='admin_active'):
+                response_get = testapp_api.get('/directories/ddff19b92e21e1560a7dd000')
+                response = testapp_api.put_json(
+                    '/directories/ddff19b92e21e1560a7dd000',
+                    {'path': '/tmp/media/', 'name': 'new name', 'parent': None},
+                    headers=[('If-Match', response_get.headers['ETag'])])
+    scan.delay.assert_called_once_with('/tmp/media')
     assert response.status_code == 200
 
 
 @patch('play.application.directories.directory_scan')
-def test_patch_item_admin(scan, testapp_api):
+def test_patch_item_admin(scan, testapp_api, file_system):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
-        with auth(testapp_api, user='admin_active'):
-            response_get = testapp_api.get('/directories/ddff19b92e21e1560a7dd000')
-            response = testapp_api.patch_json(
-                '/directories/ddff19b92e21e1560a7dd000', {'path': '/abc/123'},
-                headers=[('If-Match', response_get.headers['ETag'])])
+        with patch('play.application.application.path', FakeOsModule(file_system).path):
+            with auth(testapp_api, user='admin_active'):
+                response_get = testapp_api.get('/directories/ddff19b92e21e1560a7dd000')
+                response = testapp_api.patch_json(
+                    '/directories/ddff19b92e21e1560a7dd000', {'path': '/tmp/media/Album/'},
+                    headers=[('If-Match', response_get.headers['ETag'])])
     assert response.status_code == 200
-    scan.delay.assert_called_once_with('/abc/123')
+    scan.delay.assert_called_once_with('/tmp/media/Album')
 
 
 @patch('play.application.directories.directory_scan')

@@ -25,12 +25,12 @@ def directory_scan(dir_path):
     directory = current_app.backend.database.directories.find_one({'path': dir_path})
     logger.info("Processing:  Directory: '{}'".format(directory))
     if not directory:
-        logger.warn('Directory: {} couldn\'t be found'.format(dir_path))
+        logger.warn('Directory: {} couldn\'t be found in database'.format(dir_path))
         return
     if not path.exists(dir_path):
         current_app.backend.database.directories.update(
             {'path': dir_path}, {'$set': {'status': False}})
-        logger.warn('Directory: {} couldn\'t be found'.format(dir_path))
+        logger.warn('Directory: {} couldn\'t be found on filesystem'.format(dir_path))
         return
     for item in scandir(directory['path']):
         if item.is_dir():

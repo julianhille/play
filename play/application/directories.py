@@ -3,6 +3,7 @@ from bson.errors import InvalidId
 from eve.auth import requires_auth
 from flask import request, abort
 from flask.ext.login import current_app, current_user
+from os import path
 from play.application.blueprint import Blueprint
 from play.task.application import directory_scan
 
@@ -40,7 +41,8 @@ SCHEMA = {
         'path': {
             'type': 'string',
             'required': True,
-            'roles': ['admin']
+            'roles': ['admin'],
+            'path': True
         },
         'name': {
             'type': 'string',
@@ -61,6 +63,17 @@ blueprint = Blueprint('directories', __name__, SCHEMA, url_prefix='/directories'
 def ensure_scan_on_insert(documents):
     for document in documents:
         directory_scan.delay(document['path'])
+
+
+@blueprint.hook('on_insert')
+@blueprint.hook('on_replace')
+@blueprint.hook('on_update')
+def ensure_abspath(documents, original=None):
+    if not isinstance(documents, list):
+        documents = [documents]
+    for document in documents:
+        if 'path' in document:
+            document['path'] = path.abspath(document['path'])
 
 
 @blueprint.hook('on_replace')
