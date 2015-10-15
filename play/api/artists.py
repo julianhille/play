@@ -1,4 +1,4 @@
-from play.application.blueprint import Blueprint
+from play.api.blueprint import Blueprint
 
 SCHEMA = {
     'item_title': 'artist',

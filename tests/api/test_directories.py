@@ -67,7 +67,7 @@ def test_get_item_with_embedding_user(testapp_api):
 
 def test_post_item_dir_exists_admin(testapp_api, file_system):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
-        with patch('play.application.application.os', FakeOsModule(file_system)):
+        with patch('play.api.application.os', FakeOsModule(file_system)):
             with auth(testapp_api, user='admin_active'):
                 response = testapp_api.post_json(
                     '/directories', {'path': '/tmp/media/Album', 'name': 'some name',
@@ -77,7 +77,7 @@ def test_post_item_dir_exists_admin(testapp_api, file_system):
 
 def test_post_item_dir_not_exists_admin(testapp_api, file_system):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
-        with patch('play.application.application.os', FakeOsModule(file_system)):
+        with patch('play.api.application.os', FakeOsModule(file_system)):
             with auth(testapp_api, user='admin_active'):
                 with raises(AppError) as context:
                     testapp_api.post_json(
@@ -86,10 +86,10 @@ def test_post_item_dir_not_exists_admin(testapp_api, file_system):
     assert '422 UNPROCESSABLE ENTITY' in str(context.value)
 
 
-@patch('play.application.directories.directory_scan')
+@patch('play.api.directories.directory_scan')
 def test_put_item_admin(scan, testapp_api, file_system):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
-        with patch('play.application.application.os', FakeOsModule(file_system)):
+        with patch('play.api.application.os', FakeOsModule(file_system)):
             with auth(testapp_api, user='admin_active'):
                 response_get = testapp_api.get('/directories/ddff19b92e21e1560a7dd000')
                 response = testapp_api.put_json(
@@ -100,10 +100,10 @@ def test_put_item_admin(scan, testapp_api, file_system):
     assert response.status_code == 200
 
 
-@patch('play.application.directories.directory_scan')
+@patch('play.api.directories.directory_scan')
 def test_patch_item_admin(scan, testapp_api, file_system):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
-        with patch('play.application.application.os', FakeOsModule(file_system)):
+        with patch('play.api.application.os', FakeOsModule(file_system)):
             with auth(testapp_api, user='admin_active'):
                 response_get = testapp_api.get('/directories/ddff19b92e21e1560a7dd000')
                 response = testapp_api.patch_json(
@@ -113,7 +113,7 @@ def test_patch_item_admin(scan, testapp_api, file_system):
     scan.delay.assert_called_once_with('/tmp/media/Album')
 
 
-@patch('play.application.directories.directory_scan')
+@patch('play.api.directories.directory_scan')
 def test_patch_item_admin_without_path(scan, testapp_api):
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
         with auth(testapp_api, user='admin_active'):

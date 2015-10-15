@@ -1,4 +1,4 @@
-from play.application.blueprint import Blueprint
+from play.api.blueprint import Blueprint
 from flask import abort
 from flask.ext.login import current_user
 

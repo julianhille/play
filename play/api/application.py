@@ -9,7 +9,7 @@ import os
 import re
 
 from play import default_settings
-from play.application.auth import SessionAuth
+from play.api.auth import SessionAuth
 
 
 class Validator(mongo.Validator):
