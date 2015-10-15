@@ -1,0 +1,77 @@
+CHANGES
+=======
+
+* Adds frontend logic to send a rescan for tracks
+* Adds endpoint to send a rescan for tracks
+* Adds streaming / partial sending
+* Changes text field from name to search build for searching
+* Ensures abspath for directories and also that they exist
+* Adds future command line to switch between mongomock and real mongo for tests
+* Corrects travis yaml
+* Adds first part of a readme
+* Adds travis configuration for CI
+* Fixes testing and removes some print statements
+* Fixes indexing
+* Makes length parameter readonly
+* Tests / mongomock fixing
+* Extends route and tests to reflect logic in administration panel
+* Adds parent directory path to track
+* Tiny fixes
+* First commit for admin backend
+* Adds js for searching
+* Adds static fonts for glyphicons
+* Adds ensuring indices on tests and adds test for fulltext search
+* Adding header and some js for searching
+* Addings parents path to directories for easy traversing up the tree
+* Pep8 fix
+* Adds login view, possiblity to create a playlist
+* Adds index creation utility
+* Adds me registration route and more tests
+* Adds some logic for me route
+* Fixes tests and a little logic for the me endpoints
+* Fixes tox ini to be used with python3
+* Starts implementing a /me endpoint
+* User gets a static methoc for hashing passwords
+* Adds logic for selecting a track
+* Adds track count
+* Audio player logic added
+* Adds first templates
+* Raises test coverage
+* Adds test and fixes user login issue
+* Adds csrf as cookie on request
+* Adds nocov to not testable things
+* Adds testing for directories and audio scanning
+* Adds tasks and test for tasks. Also adds functionality on creation of a directory that scanning is initiated
+* Adds role based fields and changes allowed roles and methods for directories route
+* Fixes data relation in playlists
+* Adds test for user login model and adds function for role testing
+* Fixes settings loading and adds tests that password and roles is not in the response
+* Adds some embedding to schema
+* Test fixes and pep8
+* Removing administration
+* Adds login and logout functionality
+* Removes print statements
+* Adds csrf route to application app
+* Adds configuration to api application
+* Adds static routing and multiapp dispatching
+* Authing rewritten
+* Fixes pep8 issues
+* Adds administration app and auth changes some authing in eve and adds more tests
+* Preparing conftest for more apps
+* Fixing tests
+* Adds users route
+* Fixes tests
+* Fixes typo and adds directories route
+* Adds tracks streaming route
+* Adds artists route
+* Fixes a tiny pep8
+* Adds albums route
+* Fixes some minor issues with roles in tracks route
+* Adds OSX related and some vim ignores
+* Initial application init
+* Ignoring coverage file
+* Ads pytest together with coverage infos
+* more basic setup for testing and installing
+* Adds requirements and some test setups
+* Initial commit
+* Initial commit

@@ -6,8 +6,7 @@ cache:
 env: 
   - TYPE=PYTHON PARAM=py34
   - TYPE=PYTHON PARAM=pep8
-  - TYPE=ESLINT PARAM=./play/static/static/app/admin.js
-  - TYPE=ESLINT PARAM=./play/static/static/app/app.js
+  - TYPE=ESLINT PARAM=./play/static/static/app/
 script:
   - if [[ $TYPE == 'PYTHON' ]]; then tox -e $PARAM; fi
   - if [[ $TYPE == 'ESLINT' ]]; then eslint $PARAM; fi
