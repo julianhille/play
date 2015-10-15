@@ -19,7 +19,7 @@
 
         service.responseError = function(response) {
             if (response.status === 401) {
-                console.log('user logged out')
+                console.log('user not authorized')
             }
             return response;
         };
@@ -99,7 +99,6 @@
                 $scope.go = function(directory, mode) {
                     if (typeof mode === 'undefined')
                         mode = '';
-                    console.log(typeof mode == 'undefied', '/directories/' + directory._id + '/' + mode)
                     $location.path('/directories/' + directory._id + '/' + mode);
                 };
 
@@ -131,6 +130,9 @@
         $scope.setActiveState = function(track, state) {
             TrackRepository.patch(track, {'active': state}, function(data) {
                 track.active = state;});
+        };
+        $scope.triggerRescan = function(track) {
+            TrackRepository.triggerRescan(track);
         };
     }]);
 
@@ -171,7 +173,6 @@
         };
 
         $scope.deleteRole = function(index) {
-            console.log(index);
             $scope.user.roles.splice(index, 1);
         };
         $scope.addRole = function ($event) {
@@ -288,6 +289,14 @@
                         success(data);
                 };
                 return service.patch({trackId: track._id, _etag: track._etag}, patch, success_callback, error);
+            },
+            triggerRescan: function (track) {
+                var success_callback = function(data) {
+                    track._etag = data._etag;
+                    if (typeof success !== 'undefined' )
+                        success(data);
+                };
+                return $http.put(apiUrl + '/tracks/rescan', {_id: track._id});
             }
         }
     }]);

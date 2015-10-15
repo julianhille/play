@@ -190,6 +190,7 @@
                     <td>{{ track._updated }}</td>
                     <td>
                         <span ng-if="track.active == true" ng-click="setActiveState(track, false)" class="glyphicon glyphicon-ok"></span>
+                        <span class="glyphicon glyphicon-repeat" ng-click="triggerRescan(track)"></span>
                         <span ng-if="track.active !== true" ng-click="setActiveState(track, true)" class="glyphicon glyphicon-remove"></span>
                     </td>
                 </tr>
