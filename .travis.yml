@@ -3,16 +3,23 @@ sudo: true
 cache:
   directories:
     - $HOME/.cache/pip
-env:
-  - TOX_ENV=py34
-  - TOX_ENV=pep8
+env: 
+  - TYPE=PYTHON PARAM=py34
+  - TYPE=PYTHON PARAM=pep8
+  - TYPE=ESLINT PARAM=./play/static/static/app/admin.js
+  - TYPE=ESLINT PARAM=./play/static/static/app/app.js
 script:
-  - tox -e $TOX_ENV
+  - if [[ $TYPE == 'PYTHON' ]]; then tox -e $PARAM; fi
+  - if [[ $TYPE == 'ESLINT' ]]; then eslint $PARAM; fi
 before_install:
   - "sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10"
   - "echo \"deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.0 main\" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list"
   - "sudo apt-get update"
-  - "sudo apt-get -y --force-yes install mongodb-org-server"
+install:
+  -  if [[ $TYPE == 'PYTHON' ]]; then sudo apt-get -y --force-yes install mongodb-org-server; fi
+  -  if [[ $TYPE == 'PYTHON' ]]; then pip install tox; fi
+  -  if [[ $TYPE == 'ESLINT' ]]; then sudo apt-get -y --force-yes install npm; fi
+  -  if [[ $TYPE == 'ESLINT' ]]; then npm install eslint; fi
 before_script:
-  - "until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done"
-install: pip install tox
+  -  if [[ $TYPE == 'PYTHON' ]]; then until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done; fi
+
