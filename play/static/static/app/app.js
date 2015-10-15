@@ -239,7 +239,7 @@ app.service('TracksRepository', function(apiUrl, $http) {
         });
     }
     this.getStream = function(callback, id) {
-        return callback(apiUrl + '/stream/' + id);
+        return callback(apiUrl + '/tracks/stream/' + id);
     }
 });
 
