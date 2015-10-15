@@ -1,3 +1,4 @@
+from bson import ObjectId
 from pytest import raises, mark, config
 from unittest.mock import patch, Mock
 from webtest import AppError
@@ -156,21 +157,21 @@ def test_delete_resource_no_auth(testapp_api):
 
 def test_get_stream_no_auth(testapp_api):
     with raises(AppError) as context:
-        testapp_api.get('/stream/adf19b92e21e1560a7dd0000')
+        testapp_api.get('/tracks/stream/adf19b92e21e1560a7dd0000')
     assert '401 UNAUTHORIZED' in str(context.value)
 
 
 def test_get_stream_id_not_valid(testapp_api):
     with auth(testapp_api, user='user_active'):
         with raises(AppError) as context:
-            testapp_api.get('/stream/WRONG')
+            testapp_api.get('/tracks/stream/WRONG')
     assert '404 NOT FOUND' in str(context.value)
 
 
 def test_get_stream_id_not_found(testapp_api):
     with auth(testapp_api, user='user_active'):
         with raises(AppError) as context:
-            testapp_api.get('/stream/adf19b92e21e1560a7dd0001')
+            testapp_api.get('/tracks/stream/adf19b92e21e1560a7dd0001')
     assert '404 NOT FOUND' in str(context.value)
 
 
@@ -178,7 +179,7 @@ def test_get_stream_id_not_found(testapp_api):
 def test_get_stream_id_found_valid_file(send_file, testapp_api):
     send_file.return_value = 'RESPONSE'
     with auth(testapp_api, user='user_active'):
-        response = testapp_api.get('/stream/adf19b92e21e1560a7dd0000')
+        response = testapp_api.get('/tracks/stream/adf19b92e21e1560a7dd0000')
     assert send_file.call_count == 1
     assert response.body == b'RESPONSE'
 
@@ -186,7 +187,7 @@ def test_get_stream_id_found_valid_file(send_file, testapp_api):
 def test_get_stream_id_found_invalid_file(testapp_api):
     with auth(testapp_api, user='user_active'):
         with raises(AppError) as context:
-            testapp_api.get('/stream/adf19b92e21e1560a7dd0000')
+            testapp_api.get('/tracks/stream/adf19b92e21e1560a7dd0000')
     assert '500 INTERNAL SERVER ERROR' in str(context.value)
 
 
@@ -196,3 +197,45 @@ def test_fulltext_search(testapp_api):
     with auth(testapp_api, user='user_active'):
         response = testapp_api.get('/tracks/?where={"$text": {"$search":"file"}}')
     assert len(response.json_body['_items']) == 1
+
+
+def test_put_rescan_no_auth(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with raises(AppError) as context:
+            testapp_api.put('/tracks/rescan')
+    assert '401 UNAUTHORIZED' in str(context.value)
+
+
+def test_put_rescan_user(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user='user_active'):
+            with raises(AppError) as context:
+                testapp_api.put_json('/tracks/rescan', {'_id': str(ObjectId())})
+    assert '401 UNAUTHORIZED' in str(context.value)
+
+
+def test_put_rescan_invalid_id_admin(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user='admin_active'):
+            with raises(AppError) as context:
+                testapp_api.put_json('/tracks/rescan', {'_id': 'INVALIDID'})
+    assert '422 UNPROCESSABLE ENTITY' in str(context.value)
+
+
+def test_put_rescan_not_found_admin(testapp_api):
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user='admin_active'):
+            with raises(AppError) as context:
+                testapp_api.put_json('/tracks/rescan', {'_id': 'adf19b92e21e1560a7dd000A'})
+    assert '404 NOT FOUND' in str(context.value)
+
+
+@patch('play.application.tracks.scan_audio')
+def test_put_rescan_admin(scan_audio, testapp_api):
+
+    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
+        with auth(testapp_api, user='admin_active'):
+            response = testapp_api.put_json(
+                '/tracks/rescan', {'_id': 'adf19b92e21e1560a7dd0000'})
+    scan_audio.delay.assert_called_once_with('/var/media/some_file.mp3')
+    assert response.status_code == 204
