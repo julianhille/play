@@ -4,8 +4,8 @@ from eve.auth import requires_auth
 from flask.ext.login import current_user
 from flask import abort, current_app, request
 
-from play.application.blueprint import Blueprint
-from play.application.application import send_file_partial
+from play.api.blueprint import Blueprint
+from play.api.application import send_file_partial
 from play.task.application import scan_audio
 
 

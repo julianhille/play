@@ -1,5 +1,5 @@
 from flask.ext.login import current_user
-from play.application.blueprint import Blueprint
+from play.api.blueprint import Blueprint
 
 
 SCHEMA = {

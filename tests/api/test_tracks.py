@@ -175,7 +175,7 @@ def test_get_stream_id_not_found(testapp_api):
     assert '404 NOT FOUND' in str(context.value)
 
 
-@patch('play.application.tracks.send_file_partial')
+@patch('play.api.tracks.send_file_partial')
 def test_get_stream_id_found_valid_file(send_file, testapp_api):
     send_file.return_value = 'RESPONSE'
     with auth(testapp_api, user='user_active'):
@@ -230,7 +230,7 @@ def test_put_rescan_not_found_admin(testapp_api):
     assert '404 NOT FOUND' in str(context.value)
 
 
-@patch('play.application.tracks.scan_audio')
+@patch('play.api.tracks.scan_audio')
 def test_put_rescan_admin(scan_audio, testapp_api):
 
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):

@@ -87,7 +87,7 @@ def test_logout_with_correct_csrf(testapp_api):
 
 
 def test_get_item_no_auth_without_cookie(testapp_api):
-    with patch('play.application.me.generate_csrf') as csrf:
+    with patch('play.api.me.generate_csrf') as csrf:
         csrf.return_value = "SOMETOKEN"
         with raises(AppError) as context:
             testapp_api.get('/me')
@@ -96,7 +96,7 @@ def test_get_item_no_auth_without_cookie(testapp_api):
 
 
 def test_get_item_no_auth_with_cookie(testapp_api):
-    with patch('play.application.me.generate_csrf') as csrf:
+    with patch('play.api.me.generate_csrf') as csrf:
         csrf.return_value = "SOMETOKEN"
         with raises(AppError) as context:
             testapp_api.get('/me', headers=[('Cookie', 'XSRF-TOKEN=ABC;')])
@@ -119,7 +119,7 @@ def test_patch_password_item_user(testapp_api, humongous):
     user_before = LoginUser.get_by_name(humongous.users, 'user_active')
     login_user = Mock(hash_password=Mock(return_value="some_password"))
     with auth(testapp_api, user='user_active'):
-        with patch('play.application.me.LoginUser', login_user):
+        with patch('play.api.me.LoginUser', login_user):
             with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
                 response_get = testapp_api.get('/me')
                 response = testapp_api.patch_json(

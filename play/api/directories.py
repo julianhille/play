@@ -4,7 +4,7 @@ from eve.auth import requires_auth
 from flask import request, abort
 from flask.ext.login import current_app, current_user
 from os import path
-from play.application.blueprint import Blueprint
+from play.api.blueprint import Blueprint
 from play.task.application import directory_scan
 
 SCHEMA = {

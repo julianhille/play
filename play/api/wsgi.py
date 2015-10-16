@@ -2,8 +2,8 @@ from flask import current_app
 from flask.ext.login import LoginManager
 from flask.ext.wtf.csrf import CsrfProtect
 
-from play.application.application import Application
-from play.application import albums, artists, csrf, directories, me, playlists, tracks, users
+from play.api.application import Application
+from play.api import albums, artists, csrf, directories, me, playlists, tracks, users
 from play.models.users import LoginUser
 
 settings = {

@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 from webtest import TestApp
 from flask.ext.login import AnonymousUserMixin
 
-from play.application.wsgi import create_app as api
+from play.api.wsgi import create_app as api
 from play.task.application import application as task_app
 from play.models.users import LoginUser
 from play.mongo import ensure_indices

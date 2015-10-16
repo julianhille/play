@@ -6,7 +6,7 @@ from flask import abort, current_app, request, redirect, url_for
 from flask.ext.login import current_user, login_user, logout_user
 from flask.ext.wtf.csrf import generate_csrf
 
-from play.application.blueprint import Blueprint
+from play.api.blueprint import Blueprint
 from play.models.users import UserLoginForm, LoginUser
 
 SCHEMA = {

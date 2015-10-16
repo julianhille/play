@@ -1,6 +1,6 @@
 from werkzeug.wsgi import DispatcherMiddleware
 from werkzeug.serving import run_simple
-from play.application.wsgi import create_app as backend
+from play.api.wsgi import create_app as backend
 from play.static.wsgi import application as frontend
 
 
