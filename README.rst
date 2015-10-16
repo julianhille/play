@@ -5,6 +5,6 @@ Play
 
 Play is an open source restful music player.
 It uses:
-Eve, Flask, Celery, Cerberus, AgnularJS
+Eve, Flask, Celery, Cerberus, AngularJS
 
 The codebase is thoroughly tested under Python 3.4.
