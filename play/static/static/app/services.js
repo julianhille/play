@@ -22,7 +22,7 @@
                 return service.query(search, success, error);
             },
             get: function(trackId, success, error) {
-                return service.get({track: trackId}, success, error);
+                return service.get({trackId: trackId}, success, error);
             },
             patch: function (track, patch, success, error) {
                 var success_callback = function(data) {
