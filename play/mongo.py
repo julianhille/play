@@ -11,7 +11,11 @@ def ensure_indices(db):  # nocov
     db.users.create_index([('name', pymongo.DESCENDING)], unique=True, background=True)
 
     # tracks
-    db.tracks.create_index([('search', pymongo.TEXT)], background=True)
+    db.tracks.create_index(
+        [('search.artist', pymongo.TEXT),
+         ('search.title', pymongo.TEXT),
+         ('search.file', pymongo.TEXT)],
+        background=True)
     db.tracks.create_index([('hash', pymongo.DESCENDING)], background=True)
 
     # directories

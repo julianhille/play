@@ -8,3 +8,4 @@ celery
 flask-login
 flask-pymongo
 flask-wtf
+mutagen

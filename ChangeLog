@@ -1,8 +1,10 @@
 CHANGES
 =======
 
+* Changes deprecated ensure_index to create_index
 * Pep8 fixes
 * Adds deletion of tracks from playlists, if an trak gets really deleted
+* Removes wrong information about using a different database
 * Adds delete logic for users
 * Adds more tests
 * Adds more tests for api/application validators and fixed a potential path validator bug

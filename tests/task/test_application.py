@@ -1,7 +1,9 @@
+from unittest.mock import call, patch, MagicMock
+
 from fake_filesystem import FakeOsModule, FakeFileOpen
-from play.task import application
-from unittest.mock import call, patch
 from scandir import GenericDirEntry
+
+from play.task import application
 
 
 def test_scan_dir(testapp_task, file_system):
@@ -64,7 +66,9 @@ def test_scan_dir_missing_db_entry(testapp_task, file_system):
     assert testapp_task.backend.database.tracks.find().count() == 0
 
 
-def test_scan_audio(testapp_task, file_system):
+@patch('play.task.application.add_audio_information')
+def test_scan_audio(audio_information, testapp_task, file_system):
+
     os = FakeOsModule(file_system)
     open_ = FakeFileOpen(file_system)
     testapp_task.backend.database.directories.remove({})
@@ -76,6 +80,7 @@ def test_scan_audio(testapp_task, file_system):
         application.scan_audio('/tmp/media/Album/John Bovi/01.mp3')
     assert testapp_task.backend.database.directories.find().count() == 1
     assert testapp_task.backend.database.tracks.find().count() == 1
+    assert audio_information.call_count == 1
 
 
 def test_scan_audio_missing_directory(testapp_task, file_system):
@@ -102,3 +107,58 @@ def test_scan_audio_missing_file(testapp_task, file_system):
         application.scan_audio('/tmp/media/Album/John Bovi/01111.mp3')
     assert testapp_task.backend.database.directories.find().count() == 1
     assert testapp_task.backend.database.tracks.find().count() == 0
+
+
+@patch('play.task.application.File')
+def test_missing_tags(File):
+
+    File.return_value = MagicMock(
+        info=MagicMock(bitrate=256431,
+                       length=200.120,
+                       sample_rate=44100,
+                       track_gain=100,
+                       track_peak=110),
+        tags={}
+    )
+    data = {'search': {'file': 'is in'}}
+
+    application.add_audio_information('/some/path', data)
+    assert 'length' in data
+    assert 'lossless' in data
+    assert 'sample_rate' in data
+    assert 'bitrate' in data
+    assert data['meta_original'] == {}
+    assert data['type'] == 'MP3'
+    assert 'search' in data
+    assert 'artist' in data['search']
+    assert 'title' in data['search']
+    assert data['search']['file'] == 'is in'
+    assert data['search']['artist'] == ''
+    assert data['search']['title'] == ''
+
+    data = {}
+    application.add_audio_information('/some/path', data)
+    assert 'file' not in data['search']
+
+
+@patch('play.task.application.File')
+def test_with_tags(File):
+    tags = {'artist': ['someone'], 'title': ['title']}
+    File.return_value = MagicMock(
+        info=MagicMock(bitrate=256431,
+                       length=200.120,
+                       sample_rate=44100,
+                       track_gain=100,
+                       track_peak=110),
+        tags=tags
+    )
+    data = {'search': {'file': 'is in'}}
+
+    application.add_audio_information('/some/path', data)
+    assert data['meta_original'] == {'artist': ['someone'], 'title': ['title']}
+    assert 'search' in data
+    assert 'artist' in data['search']
+    assert 'title' in data['search']
+    assert data['search']['file'] == 'is in'
+    assert data['search']['artist'] == 'someone'
+    assert data['search']['title'] == 'title'
