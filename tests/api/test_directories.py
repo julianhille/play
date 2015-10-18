@@ -60,7 +60,6 @@ def test_get_resource_with_embedding_user(testapp_api):
 def test_get_item_with_embedding_user(testapp_api):
     with auth(testapp_api, user='user_active'):
         response = testapp_api.get('/directories/ddff19b92e21e1560a7dd001?embedded={"parent": 1}')
-    print(response)
     assert response.status_code == 200
     assert response.json_body['parent']['name'] == 'path'
 
