@@ -39,6 +39,41 @@
     }]);
 
 
+    module.factory('ArtistRepository', ['apiUrl', '$resource', '$http', function(apiUrl, $resource, $http) {
+        var service = $resource(apiUrl + '/artists/:artistId', {}, {
+            query: {method:'GET', params:{artistId:''}},
+            delete: {method: 'DELETE', cache: false},
+            patch: {method: 'PATCH', cache: false},
+            get: {method: 'GET', cache: false},
+            create: {method: 'POST', cache: false}
+        });
+
+        return {
+            delete: function(artist, success, error) {
+                service.delete({artistId: artist._id, _etag: artist._etag}, success, error);
+            },
+            query: function(search, success, error)
+            {
+                return service.query(search, success, error);
+            },
+            get: function(artistId, success, error) {
+                return service.get({artistId: artistId}, success, error);
+            },
+            patch: function (artist, patch, success, error) {
+                var success_callback = function(data) {
+                    artist._etag = data._etag;
+                    if (typeof success !== 'undefined' )
+                        success(data);
+                };
+                return service.patch({artistId: artist._id, _etag: artist._etag}, patch, success_callback, error);
+            },
+            create: function (data, success, error) {
+                return service.create({}, data, success, error );
+            }
+        };
+    }]);
+
+
     module.factory('DirectoryRepository', ['apiUrl', '$resource', '$http', function(apiUrl, $resource, $http) {
         var service = $resource(apiUrl + '/directories/:directoryId', {}, {
             query: {method:'GET', params:{directoryId:''}},

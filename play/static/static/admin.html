@@ -7,7 +7,6 @@
 </head>
 <body ng-app="PlayAdminApp">
 
-
     <div class="full">
         <nav class="navbar navbar-default" role="navigation" id="top-menu">
             <div class="navbar-header">
@@ -23,6 +22,7 @@
                 <li><a href="#/directories" id="navbar-playlists">Directories</a></li>
                 <li><a href="#/tracks" id="navbar-playlists">Tracks</a></li>
                 <li><a href="#/users" id="navbar-playlists">Users</a></li>
+                <li><a href="#/artists" id="navbar-playlists">Artists</a></li>
             </ul>
 
         </nav>
@@ -36,8 +36,7 @@
     <script src="/static/app/admin.js"></script>
 
 
-
-    <script type="text/ng-template" id="templates/users_edit.html">
+    <script type="text/ng-template" id="templates/users/edit.html">
         <form class="form" ng-submit="save($event)">
             <div class="form-group">
                 <label for="user_name">Login name</label>
@@ -59,6 +58,7 @@
             <button type="submit" >{{user._id ? 'Save' : 'Create'}}</button>
         </form>
     </script>
+
 
     <script type="text/ng-template" id="templates/directories/index.html">
         <a class="btn btn-default" href="#/directories/new" role="button">New</a>
@@ -82,15 +82,14 @@
                     <td>{{ directory._updated }}</td>
                     <td>
                         <span class="glyphicon glyphicon-trash" ng-click="delete(directory)"></span>
-                        <span class="glyphicon glyphicon-edit" ng-click="go(directory, 'edit')"></span>
+                        <a href="#/directories/{{ directory._id }}/edit"><span class="glyphicon glyphicon-edit"></span></a>
                         <span class="glyphicon glyphicon-repeat" ng-click="triggerRescan(directory)"></span>
-                        <span class="glyphicon glyphicon-info-sign" ng-click="go(directory)"></span>
+                        <a href="#/directories/{{ directory._id }}"><span class="glyphicon glyphicon-info-sign"></span></a>
                     </td>
                 </tr>
             </tbody>
         </table>
     </script>
-
 
 
     <script type="text/ng-template" id="templates/directories/edit.html">
@@ -109,20 +108,19 @@
     </script>
 
 
-    <script type="text/ng-template" id="templates/directories/user.html">
+    <script type="text/ng-template" id="templates/directories/view.html">
         <h2> Directory infos</h2>
         <span> {{ directory.name }} </span>
         <span> {{ directory.path }} </span>
         <span> {{ directory.scanned }} </span>
         <span> {{ directory._created }} </span>
         <span> {{ directory._updated }} </span>
-        <button class="btn btn-default" ng-click="go(directory, 'edit')">Edit</button>
+        <a class="btn btn-default" href="#/directories/{{ directory._id }}/edit)">Edit</a>
         <span>Track Count: {{ tracks._meta.total }} </span>
     </script>
 
 
-
-    <script type="text/ng-template" id="templates/users.html">
+    <script type="text/ng-template" id="templates/users/index.html">
         <a class="btn btn-default" href="#/users/new" role="button">New</a>
         <table class="table table-striped">
             <thead>
@@ -160,7 +158,7 @@
                         <span class="glyphicon glyphicon-trash" ng-click="delete(user)"></span>
                         <span ng-if="user.active == true" ng-click="setActiveState(user, false)" class="glyphicon glyphicon-ok"></span>
                         <span ng-if="user.active !== true" ng-click="setActiveState(user, true)" class="glyphicon glyphicon-remove"></span>
-                        <span class="glyphicon glyphicon-edit" ng-click="go(user)"></span>
+                        <a href="#/users/{{ user._id }}"><span class="glyphicon glyphicon-edit" ></span></a>
                     </td>
                 </tr>
             </tbody>
@@ -198,5 +196,133 @@
             </tbody>
         </table>
     </script>
+
+
+    <script type="text/ng-template" id="templates/artists/index.html">
+        <div class="form-group">
+            <a class="btn btn-default" href="#/artists/new" role="button">New</a>
+        </div>
+        <div class="">
+            <div class="form-group form-inline">
+                <label for="searchField">Filter:</label>
+                <select class="form-control"  ng-model="criteriaForm.field" id="searchField">
+                    <option value="search">All</option>
+                    <option value="name">Name</option>
+                    <option value="namevariations">Name variations</option>
+                    <option value="aliases">Aliases</option>
+                    <option value="realname">Realname</option>
+                </select>
+                <input class="form-control" type="text" ng-model="criteriaForm.value" />
+                <button class="btn btn-default" type="button" ng-click="addSearchCriteria()">Add criteria</button>
+            </div>
+            <div class="form-group form-inline" ng-repeat="criteria in searchCriteria">
+                <label>Criteria:</label>
+                <select class="form-control"  ng-model="criteria.field">
+                    <option value="search">All</option>
+                    <option value="name">Name</option>
+                    <option value="namevariations">Name variations</option>
+                    <option value="aliases">Aliases</option>
+                    <option value="realname">Realname</option>
+                </select>
+                <input class="form-control" type="text" ng-change="updateArtists()" ng-model-options="{updateOn: 'blur'}" ng-model="criteria.value" />
+                <span class="glyphicon glyphicon-trash" ng-click="deleteCriteria($index)"></span>
+            </div>
+            <div class="form-group form-inline">
+                <label for="searchMaxResults">Limit:</label>
+                <select id="searchMaxResults" ng-change="updateArtists()" class="form-control" ng-model="search.max_results" ng-options="value as value for value in [10, 100, 200, 300]"></select>
+            </div>
+        </div>
+        <uib-pagination ng-change="updateArtists()" total-items="totalItems"  items-per-page="maxResults" ng-model="search.page" max-size="10" class="pagination-sm" boundary-links="true"></uib-pagination>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Realname</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th>Edit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="artist in artists._items">
+                    <td>{{ artist.name }}</td>
+                    <td>{{ artist.realname }}</td>
+                    <td>{{ artist._created }}</td>
+                    <td>{{ artist._updated }}</td>
+                    <td>
+                        <span class="glyphicon glyphicon-trash" ng-click="delete(artist)"></span>
+                        <a href="#/artists/{{ artist._id }}/edit"><span class="glyphicon glyphicon-edit"></span></a>
+                        <a href="#/artists/{{ artist._id }}"><span class="glyphicon glyphicon-info-sign"></span></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </script>
+
+
+    <script type="text/ng-template" id="templates/artists/view.html">
+        <div class="panel panel-default panel-body">
+            <label>Name</label>
+            <p>{{ artist.name }}</p>
+
+        </div>
+        <div class="panel panel-default panel-body">
+            <label>Realname</label>
+            <p>{{ artist.realname }}</p>
+
+        </div>
+        <div class="panel panel-default panel-body">
+            <label>Profile</label>
+            <p>{{ artist.profile }}</p>
+        </div>
+        <div class="panel panel-default panel-body">
+            <label>Aliases</label>
+            <ul>
+                <li ng-repeat="alias in artist.aliases">{{ alias}}</li>
+            </ul>
+        </div>
+        <div class="panel panel-default panel-body">
+            <label>Name variations</label>
+            <ul>
+                <li ng-repeat="namevariation in artist.namevariations">{{ namevariation }}</li>
+            </ul>
+        </div>
+        <a class="btn btn-default" href="#/artists/{{ artist._id }}/edit">Edit</a>
+    </script>
+
+
+    <script type="text/ng-template" id="templates/artists/edit.html">
+        <form name="artistForm" ng-submit="save()">
+            <div class="form-group">
+                <label>Name</label>
+                <input ng-model="artist.name" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Realname</label>
+                <input ng-model="artist.realname" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Profile</label>
+                <textarea ng-model="artist.profile" class="form-control"> </textarea>
+            </div>
+            <div class="form-group">
+                <label>Aliases</label>
+                <ul>
+                    <li ng-repeat="alias in artist.aliases">{{ alias}}</li>
+                </ul>
+            </div>
+            <div class="form-group">
+                <label>Name variations</label>
+                <ul>
+                    <li ng-repeat="namevariation in artist.namevariations">{{ namevariation }}</li>
+                </ul>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-default">Save</button>
+            </div>
+        </form>
+    </script>
+
 </body>
 </html>
