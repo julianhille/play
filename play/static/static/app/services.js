@@ -39,7 +39,7 @@
     }]);
 
 
-    module.factory('ArtistRepository', ['apiUrl', '$resource', '$http', function(apiUrl, $resource, $http) {
+    module.factory('ArtistRepository', ['apiUrl', '$resource', function(apiUrl, $resource) {
         var service = $resource(apiUrl + '/artists/:artistId', {}, {
             query: {method:'GET', params:{artistId:''}},
             delete: {method: 'DELETE', cache: false},
