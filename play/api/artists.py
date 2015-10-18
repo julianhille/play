@@ -1,11 +1,14 @@
 from play.api.blueprint import Blueprint
 
 SCHEMA = {
+    'datasource': {
+        'default_sort': [('name', 1)]
+    },
     'item_title': 'artist',
     'public_item_methods': [],
     'item_methods': ['GET'],
     'resource_methods': ['GET'],
-    'allowed_roles': ['user'],
+    'allowed_roles': ['user', 'admin'],
     'schema': {
         'genre': {
             'type': 'list',
