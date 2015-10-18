@@ -9,6 +9,7 @@ VALID_ARTIST = {
     'name': 'Some name'
 }
 
+
 def test_get_resource_no_auth(testapp_api):
     with raises(AppError) as context:
         testapp_api.get('/artists')
@@ -129,5 +130,5 @@ def test_delete_item_admin(testapp_api):
         with auth(testapp_api, user='admin_active'):
             response_get = testapp_api.get('/artists/acb419b92e21e1560a7dd000')
             response = testapp_api.delete('/artists/acb419b92e21e1560a7dd000', VALID_ARTIST,
-                                              headers=[('If-Match', response_get.headers['ETag'])])
+                                          headers=[('If-Match', response_get.headers['ETag'])])
     assert response.status_code == 204
