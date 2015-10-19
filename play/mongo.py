@@ -2,6 +2,11 @@ import pymongo
 
 
 def ensure_indices(db):  # nocov
+    # artists
+    db.artists.create_index([('name', pymongo.DESCENDING)], background=True)
+    db.artists.create_index([('search', pymongo.DESCENDING)], background=True)
+    db.artists.create_index([('discogs_id', pymongo.DESCENDING)], background=True)
+
     # users
     db.users.ensure_index([('name', pymongo.DESCENDING)], unique=True, background=True)
 

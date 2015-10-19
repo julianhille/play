@@ -38,24 +38,40 @@
             controller: 'DirectoriesController',
             name: 'DirectoryEdit'
         }).when('/directories/:directoryId', {
-            templateUrl: 'templates/directories/user.html',
+            templateUrl: 'templates/directories/view.html',
             controller: 'DirectoriesController',
             name: 'DirectoryView'
         }).when('/tracks', {
             templateUrl: 'templates/tracks.html',
             controller: 'TracksController'
         }).when('/users', {
-            templateUrl: 'templates/users.html',
+            templateUrl: 'templates/users/index.html',
             controller: 'UserController',
             name: 'UserList'
         }).when('/users/new', {
-            templateUrl: 'templates/users_edit.html',
+            templateUrl: 'templates/users/edit.html',
             controller: 'UserController',
             name: 'UserCreate'
         }).when('/users/:userId', {
-            templateUrl: 'templates/users_edit.html',
+            templateUrl: 'templates/users/edit.html',
             controller: 'UserController',
             name: 'UserEdit'
+        }).when('/artists/new', {
+            templateUrl: 'templates/artists/edit.html',
+            controller: 'ArtistController',
+            name: 'ArtistNew'
+        }).when('/artists', {
+            templateUrl: 'templates/artists/index.html',
+            controller: 'ArtistListController',
+            name: 'ArtistList'
+        }).when('/artists/:artistId', {
+            templateUrl: 'templates/artists/view.html',
+            controller: 'ArtistController',
+            name: 'ArtistView'
+        }).when('/artists/:artistId/edit', {
+            templateUrl: 'templates/artists/edit.html',
+            controller: 'ArtistController',
+            name: 'ArtistEdit'
         }).otherwise({
             redirectTo: '/directories'
         });
@@ -65,8 +81,8 @@
 
     app.controller(
         'DirectoriesController', 
-        ['$scope', 'DirectoryRepository', 'TrackRepository' ,'$route', '$location',
-         function($scope, DirectoryRepository, TrackRepository, $route, $location){
+        ['$scope', 'DirectoryRepository', 'TrackRepository' ,'$route',
+         function($scope, DirectoryRepository, TrackRepository, $route){
              $scope.trackCount = 0;
              $scope.directory = {};
              $scope.directories = null;
@@ -84,11 +100,6 @@
              } else {
                  $scope.directories = DirectoryRepository.query({where: JSON.stringify({parent: null})});
              }
-             $scope.go = function(directory, mode) {
-                 if (typeof mode === 'undefined')
-                     mode = '';
-                 $location.path('/directories/' + directory._id + '/' + mode);
-             };
 
              $scope.delete = function(directory) {
                  DirectoryRepository.delete(directory, function() {
@@ -134,9 +145,6 @@
         } else {
             $scope.users = UserRepository.query();
         }
-        $scope.go = function(user) {
-            $location.path('/users/' + user._id);
-        };
 
         $scope.save = function() {
             $scope.user.active = Boolean($scope.user.active);
@@ -180,9 +188,85 @@
         };
     }]);
 
+    app.controller('ArtistController', ['$route', '$scope', 'ArtistRepository', function($route, $scope, ArtistRepository) {
+        $scope.artist = {};
+        if(['ArtistView', 'ArtistEdit'].indexOf($route.current.$$route.name) > -1) {
+            $scope.artist = ArtistRepository.get($route.current.params.artistId);
+        }
+        $scope.save = function() {
+            if ($scope.artist._id) {
+                ArtistRepository.patch($scope.artist, {
+                    name: $scope.artist.name,
+                    realname: $scope.artist.realname,
+                    profile: $scope.artist.profile,
+                    aliases: $scope.artist.aliases,
+                    namevariations: $scope.artist.namevariations
+                });
+            } else {
+                ArtistRepository.create({
+                    name: $scope.artist.name,
+                    realname: $scope.artist.realname,
+                    profile: $scope.artist.profile,
+                    aliases: $scope.artist.aliases,
+                    namevariations: $scope.artist.namevariations
+                });
+            }
+
+        };
+    }]);
+
+    app.controller('ArtistListController', ['$scope', '$location', 'ArtistRepository', function($scope, $location, ArtistRepository){
+        $scope.currentPage = 5;
+        $scope.maxResults = 2;
+        $scope.totalItems = 25;
+        $scope.searchCriteria = [];
+        $scope.search = {
+            page: 1,
+            max_results: 100,
+            where: {}
+        };
+
+        $scope.criteriaForm = {
+            field: 'search',
+            value: ''
+        };
 
 
+        $scope.deleteCriteria = function (index) {
+            $scope.searchCriteria.splice(index, 1);
+            $scope.updateArtists();
+        };
 
+        $scope.updateArtists = function () {
+            var search = angular.copy($scope.search);
+            $scope.searchCriteria.forEach(function (criteria) {
+                if (!(criteria.field in search.where)) {
+                    search.where[criteria.field] = {'$in': []};
+                }
+                search.where[criteria.field]['$in'].push(criteria.value);
+            });
+
+            $scope.artists = ArtistRepository.query(search, function (data) {
+                $scope.currentPage = data._meta.page;
+                $scope.maxResults = data._meta.max_results;
+                $scope.totalItems = data._meta.total;
+                $scope.search.page = data._meta.page;
+            });
+        };
+
+        $scope.addSearchCriteria = function () {
+            if ($scope.criteriaForm.field && $scope.criteriaForm.value) {
+                $scope.searchCriteria.push(
+                    {
+                        field: $scope.criteriaForm.field,
+                        value: $scope.criteriaForm.value
+                    });
+                $scope.updateArtists();
+            }
+        };
+
+        $scope.updateArtists();
+    }]);
 
 
 
