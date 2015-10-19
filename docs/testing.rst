@@ -54,7 +54,6 @@ This uses a real mongo:
 .. code-block:: console
 
    $ tox -e py34 -- --humongous_engine=pymongo --humongous_host
-It is currently not possible to switch the database name, it has to be 'play'.
 
 Commands for py.test:
 
