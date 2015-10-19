@@ -1,6 +1,10 @@
 CHANGES
 =======
 
+* Adds more tests for api/application validators and fixed a potential path validator bug
+* Fixes eslint issue for service.js
+* Pep8 fixes
+* Adds administration backend for artists
 * Fixes print debug message
 * Adds artist changes to route and tests
 * adds rights for admins on artists route, also adds default sort to name field

@@ -121,3 +121,11 @@ def test_patch_item_no_auth(testapp_api):
         with raises(AppError) as context:
             testapp_api.patch_json('/users/ccff1bee2e21e1560a7dd000', {})
     assert '401 UNAUTHORIZED' in str(context.value)
+
+
+def test_projection_inverse(testapp_api):
+    with auth(testapp_api, user='user_active'):
+        response = testapp_api.get('/users/ccff1bee2e21e1560a7dd004?projection={"name":0}')
+    assert 'password' not in response.json_body
+    assert 'roles' not in response.json_body
+    assert response.status_code == 200
