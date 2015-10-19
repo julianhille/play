@@ -15,11 +15,11 @@ from play.api.auth import SessionAuth
 class Validator(mongo.Validator):
 
     def _validate_roles(self, roles, field, value):
-        if not isinstance(roles, list):
-            self._error(field, 'Schema error "%s" must be a list' % field)
+        if not isinstance(roles, list) or not all(isinstance(v, str) for v in roles):
+            self._error(field, 'Schema error "%s" must be a list of strings' % field)
 
     def _validate_path(self, path, field, value):
-        if bool(path) is True and not os.path.exists(value):
+        if bool(path) is True and (not os.path.exists(value) or not os.path.isdir(value)):
             self._error(field, 'File path must exist')
 
 
