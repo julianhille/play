@@ -158,27 +158,17 @@
 
 
         return {
-            login:  function (username, password, remember, callback) {
+            login:  function (username, password, remember, success, error) {
                 $http.post(
                     apiUrl + '/me/login',
                     {
                         username: username,
                         password: password,
                         remember: remember
-                    }).success(function (data) {
-                        service.user = data;
-                        if (typeof callback != 'undefined') {
-                            callback(data);
-                        }
-                    });
+                    }).success(success || function() {}, error || function(){});
             },
-            logout: function (callback) {
-                $http.post(apiUrl + '/me/logout', {}).success(function (data) {
-                    service.user = null;
-                    if (typeof callback != 'undefined') {
-                        callback(data);
-                    }
-                });
+            logout: function (success, error) {
+                $http.post(apiUrl + '/me/logout', {}).then(success, error);
             },
             get: function (success, error) {
                 return service.get({}, success, error);
@@ -193,5 +183,18 @@
                     {_etag: me._etag}, patch, success_callback, error );
             }
         };
-
     }]);
+
+
+    module.service('MeService', function() {
+        var service = this;
+        this.user = null;
+        this.setUser = function(user) {
+            if (user && (user.roles || []).indexOf('admin') > -1) {
+                service.user = user;
+            } else {
+                service.user = null;
+            }
+            return service.user;
+        };
+    });

@@ -1,13 +1,32 @@
 (function() {
     'use strict';
 
-    var app = angular.module('PlayAdminApp', ['play.services', 'ngRoute', 'ngResource', 'ui.bootstrap']);  // noqa
+    var app = angular.module('PlayAdminApp', ['play.services', 'ngRoute', 'ngResource', 'ui.bootstrap']);
+
+
+    app.controller('LoginController', ['$scope', '$location', 'MeRepository', 'MeService', function ($scope, $location, MeRepository, MeService) {
+        $scope.name ='';
+        $scope.password = '';
+        $scope.remember = false;
+        $scope.submit = function () {
+            MeRepository.login(
+                $scope.name,
+                $scope.password,
+                $scope.remember,
+                function(user) {
+                    MeService.setUser(user);
+
+                }
+            );
+            return false;
+        };
+    }]);
+
     app.value('apiUrl', '//localhost:8000/api');
 
 
-    app.service('APIInterceptor', function() {
+    app.service('APIInterceptor', ['$location', 'MeService', function($location, MeService) {
         var service = this;
-
         service.request = function(config) {
             if(typeof config.params !== 'undefined' && typeof config.params._etag !== 'undefined') {
                 config.headers['If-Match'] = config.params._etag;
@@ -18,11 +37,11 @@
 
         service.responseError = function(response) {
             if (response.status === 401) {
-                // console.log('user not authorized');
+                MeService.setUser(null);
             }
-            return response;
+            throw response;
         };
-    });
+    }]);
 
     app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
         $routeProvider.when('/directories', {
@@ -78,6 +97,19 @@
 
         $httpProvider.interceptors.push('APIInterceptor');
     }]);
+
+    app.run(function($rootScope, $location, MeService, MeRepository) {
+        $rootScope.me = MeService;
+        MeRepository.get(
+            function(user) {
+                MeService.setUser(user);
+            }
+        );
+        $rootScope.logout = function() {
+            MeRepository.logout();
+            MeService.setUser(null);
+        };
+    });
 
     app.controller(
         'DirectoriesController', 

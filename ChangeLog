@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+* Adds admin right to /me route also adds possiblity to retrieve roles of the user. Adds test for both
+* Adds test for static routes and adds a admin route
+* Adds meta data from mp3 files to the backend and tests for that logic. Also changes the text indexing for the search field
 * Changes deprecated ensure_index to create_index
 * Pep8 fixes
 * Adds deletion of tracks from playlists, if an trak gets really deleted

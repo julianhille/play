@@ -15,13 +15,14 @@ SCHEMA = {
         'source': 'users',
         'projection': {
             'name': 1,
-            'last_login': 1
+            'last_login': 1,
+            'roles': 1
         }
     },
     'public_methods': ['POST'],
     'item_methods': ['GET', 'PATCH'],
     'resource_methods': ['POST'],
-    'allowed_roles': ['user'],
+    'allowed_roles': ['user', 'admin'],
     'schema': {
         'name': {
             'unique': True,
@@ -37,6 +38,14 @@ SCHEMA = {
             'type': 'string',
             'minlength': 6,
             'required': True
+        },
+        'roles': {
+            'type': 'list',
+            'schema': {
+                'type': 'string',
+                'nullable': False,
+                'empty': False
+            }
         }
     }
 }
