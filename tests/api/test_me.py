@@ -1,4 +1,4 @@
-from pytest import raises
+from pytest import raises, mark
 from unittest.mock import patch, Mock
 from webtest import AppError
 from play.models.users import LoginUser
@@ -104,14 +104,16 @@ def test_get_item_no_auth_with_cookie(testapp_api):
     assert csrf.call_count == 0
 
 
-def test_get_item_user(testapp_api):
-    with auth(testapp_api, user='user_active'):
+@mark.parametrize('user', ['admin_active', 'user_active', 'admin_user_active'])
+def test_get_item_user(testapp_api, user):
+    with auth(testapp_api, user=user):
         response = testapp_api.get('/me')
     assert response.status_code == 200
-    assert response.json_body['_id'] == 'ccff1bee2e21e1560a7dd004'
-    assert response.json_body['name'] == 'user_active'
+    assert '_id' in response.json_body
+    assert response.json_body['name'] == user
     assert 'last_login' in response.json_body
     assert 'password' not in response.json_body
+    assert 'roles' in response.json_body
     assert response.json_body['_links']['self']['href'] == '/me'
 
 
