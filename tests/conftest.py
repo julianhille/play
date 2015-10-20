@@ -10,6 +10,7 @@ from play.api.wsgi import create_app as api
 from play.task.application import application as task_app
 from play.models.users import LoginUser
 from play.mongo import ensure_indices
+from play.static.wsgi import application as static_app
 
 
 @pytest.fixture(autouse=True)
@@ -67,3 +68,14 @@ def file_system():
     fs.CreateFile('/tmp/media/Album/~.swo', contents='Some_content')
 
     return fs
+
+
+@pytest.fixture(autouse=True)
+def testapp_static(request):
+    factory = lambda: static_app
+    marker = request.node.get_marker('app_factory')
+    if marker:
+        factory = marker.kwargs.get('factory', factory)
+    app = factory()
+    app.debug = True
+    return TestApp(app)
