@@ -1,9 +1,10 @@
-from celery import Celery, current_app
-from celery.utils.log import get_task_logger
-
 from datetime import datetime
 import os
 import re
+
+from celery import Celery, current_app
+from celery.utils.log import get_task_logger
+from mutagen import File
 from scandir import scandir
 
 from .utils import hash_file
@@ -53,6 +54,7 @@ def directory_scan(dir_path):
 def scan_audio(file_path):
     logger.info("Processing:  File: '{}'".format(file_path))
     if not os.path.isfile(file_path):
+        # @TODO(jhille): We should add a "clean up track" task here.
         logger.warn('File: {} couldn\'t be found'.format(file_path))
         return
     file_path = os.path.abspath(file_path)
@@ -67,11 +69,43 @@ def scan_audio(file_path):
     search = re.sub('([^0-9a-zA-Z]+)', ' ', name)
     insert = {
         'name': name,
-        'search': search,
+        'search': {'file': search},
         'path': file_path,
         'directory': directory['_id'],
         'parent_directories': directory.get('parents', []) + [directory['_id']],
         'size': size,
-        'hash': hash_file(file_path, size)
+        'hash': hash_file(file_path, size),
     }
+    add_audio_information(file_path, insert)
     current_app.backend.database.tracks.update({'path': file_path}, insert, upsert=True)
+
+
+def add_audio_information(path, data):
+    audio = File(path, easy=True)
+
+    searchable_fields = ['artist', 'title']
+    meta_fields = ['artist', 'date', 'genre', 'title']
+
+    meta_data_original = dict(audio.tags)
+
+    data.update({
+        'meta_original': meta_data_original,
+        'length': audio.info.length,
+        'lossless': False,
+        'sample_rate': audio.info.sample_rate,
+        'bitrate': audio.info.bitrate,
+        'track_gain': audio.info.track_gain,
+        'track_peak': audio.info.track_peak,
+        'type': 'MP3',
+
+    })
+
+    for key in meta_fields:
+        if key in meta_data_original:
+            data[key] = meta_data_original[key][0]
+        else:
+            data[key] = ''
+
+    data.setdefault('search', {}).update(
+        {k: data[k] for k in searchable_fields
+         if k in data})
