@@ -7,7 +7,7 @@ from flask import abort, current_app, request
 from play.api.blueprint import Blueprint
 from play.api.application import send_file_partial
 from play.task.application import scan_audio
-
+from play.utils import delete_track_post_process
 
 SCHEMA = {
     'item_title': 'track',
@@ -100,3 +100,8 @@ def trigger_rescan():
         abort(404)
     scan_audio.delay(track['path'])
     return '', 204
+
+
+@blueprint.hook('on_deleted_item')
+def ensure_delete_from_playlists(original):
+    delete_track_post_process(current_app.data.driver.db, original['_id'])

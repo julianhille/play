@@ -1,3 +1,4 @@
+from flask import current_app
 from flask.ext.login import current_user
 from play.api.blueprint import Blueprint
 
@@ -55,3 +56,8 @@ def remove_password_from_resource(response):
 @blueprint.hook('on_fetched_item')
 def remove_password_from_item(response):
     response.pop('password', None)
+
+
+@blueprint.hook('on_deleted_item')
+def ensure_deleted_playlists(original):
+    current_app.data.driver.db.playlists.remove({'owner': original['_id']})

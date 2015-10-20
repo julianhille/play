@@ -1,4 +1,5 @@
-from pytest import raises
+from bson import ObjectId
+from pytest import mark, raises
 from unittest.mock import patch, Mock
 from webtest import AppError
 
@@ -129,3 +130,35 @@ def test_projection_inverse(testapp_api):
     assert 'password' not in response.json_body
     assert 'roles' not in response.json_body
     assert response.status_code == 200
+
+
+@mark.parametrize('user', ['user_active', 'admin_active', 'admin_user_active'])
+def test_delete_resource_user(testapp_api, user):
+    with auth(testapp_api, user=user):
+        with raises(AppError) as context:
+            testapp_api.delete('/users')
+    assert '405 METHOD NOT ALLOWED' in str(context.value)
+
+
+def test_delete_resource_no_auth(testapp_api):
+    with raises(AppError) as context:
+        testapp_api.delete('/users')
+    assert '405 METHOD NOT ALLOWED' in str(context.value)
+
+
+def test_delete_item(testapp_api):
+    driver = testapp_api.app.data.driver
+    with testapp_api.app.app_context():
+        assert driver.db.playlists.find(
+            {'owner': ObjectId('ccff1bee2e21e1560a7dd004')}).count() == 2
+    with auth(testapp_api, user='admin_active'):
+        response_get = testapp_api.get('/users/ccff1bee2e21e1560a7dd004')
+        response = testapp_api.delete('/users/ccff1bee2e21e1560a7dd004',
+                                      headers=[('If-Match', response_get.headers['ETag'])])
+
+    assert response.status_code == 204
+    with testapp_api.app.app_context():
+        assert driver.db.playlists.find(
+            {'owner': ObjectId('ccff1bee2e21e1560a7dd004')}).count() == 0
+        assert driver.db.playlists.find(
+            {'_id': ObjectId('aaff1bee2e21e1560a7dd002')}).count() == 1
