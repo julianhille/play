@@ -1,26 +1,10 @@
 (function() {
     'use strict';
 
-    var app = angular.module('PlayAdminApp', ['play.services', 'ngRoute', 'ngResource', 'ui.bootstrap']);
+    var app = angular.module('PlayAdminApp', ['play.services', 'play.controller',  'ngRoute', 'ngResource', 'ui.bootstrap']);
 
 
-    app.controller('LoginController', ['$scope', '$location', 'MeRepository', 'MeService', function ($scope, $location, MeRepository, MeService) {
-        $scope.name ='';
-        $scope.password = '';
-        $scope.remember = false;
-        $scope.submit = function () {
-            MeRepository.login(
-                $scope.name,
-                $scope.password,
-                $scope.remember,
-                function(user) {
-                    MeService.setUser(user);
 
-                }
-            );
-            return false;
-        };
-    }]);
 
     app.value('apiUrl', '//localhost:8000/api');
 

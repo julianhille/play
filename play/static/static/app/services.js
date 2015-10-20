@@ -189,12 +189,17 @@
     module.service('MeService', function() {
         var service = this;
         this.user = null;
+        this.hasRole = function (role) {
+            return this.isLoggedIn() && (service.user.roles || []).indexOf(role) > -1;
+        };
+        this.isAdmin = function () {
+            return  this.hasRole('admin');
+        };
+        this.isLoggedIn = function() {
+            return service.user !== null;
+        };
         this.setUser = function(user) {
-            if (user && (user.roles || []).indexOf('admin') > -1) {
-                service.user = user;
-            } else {
-                service.user = null;
-            }
+            service.user = user;
             return service.user;
         };
     });

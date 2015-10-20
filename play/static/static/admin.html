@@ -30,21 +30,27 @@
                 </ul>
            </div>
         </nav>
-        <div  ng-if="me.user" ng-view class="container-fluid"></div>
-        <div  ng-if="!me.user" ng-controller="LoginController" class="container-fluid">
-            <form id="login-form" method="POST" ng-submit="submit()">
+        <div  ng-if="me.isAdmin()" ng-view class="container-fluid"></div>
+        <div  ng-if="!me.isAdmin()" ng-controller="LoginController" class="container-fluid">
+            <div ng-if="me.isLoggedIn()" class="has-error">
+                <p>You don't have sufficent rights.
+                Please logout and then login as administrator.
+                {{ me.user.name }} <button class="btn btn-default" type="button" ng-click="logout()">Logout</button>
+                </p>
+            </div>
+            <form ng-if="!me.isLoggedIn()" id="login-form" method="POST" ng-submit="submit()">
                 <div class="modal-header">
                     <h4 class="modal-title">Login</h4>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <input type="text" id="login-name" class="form-control" placeholder="Login name" aria-describedby="login-name-addon" ng-model="name" />
+                        <input type="text" id="login-name" class="form-control" placeholder="Login name" aria-describedby="login-name-addon" ng-model="$parent.name" />
                     </div>
                     <div class="form-group">
-                        <input type="password" id="login-password" class="form-control" placeholder="***" aria-describedby="login-password-addon" ng-model="password" />
+                        <input type="password" id="login-password" class="form-control" placeholder="***" aria-describedby="login-password-addon" ng-model="$parent.password" />
                     </div>
                      <div class="form-group">
-                        <input type="checkbox" id="login-remember" class="form-control"  aria-describedby="login-remember-addon" ng-model="remember" />
+                        <input type="checkbox" id="login-remember" class="form-control"  aria-describedby="login-remember-addon" ng-model="$parent.remember" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -60,6 +66,7 @@
     <script src="/static/js/angular-ui.js"></script>
     <script src="/static/js/angular-resource.js"></script>
     <script src="/static/app/services.js"></script>
+    <script src="/static/app/controller.js"></script>
     <script src="/static/app/admin.js"></script>
 
 
