@@ -149,7 +149,8 @@ def test_delete_resource_no_auth(testapp_api):
 def test_delete_item(testapp_api):
     driver = testapp_api.app.data.driver
     with testapp_api.app.app_context():
-        assert driver.db.playlists.find({'owner': ObjectId('ccff1bee2e21e1560a7dd004')}).count() == 2
+        assert driver.db.playlists.find(
+            {'owner': ObjectId('ccff1bee2e21e1560a7dd004')}).count() == 2
     with auth(testapp_api, user='admin_active'):
         response_get = testapp_api.get('/users/ccff1bee2e21e1560a7dd004')
         response = testapp_api.delete('/users/ccff1bee2e21e1560a7dd004',
@@ -157,6 +158,7 @@ def test_delete_item(testapp_api):
 
     assert response.status_code == 204
     with testapp_api.app.app_context():
-        assert driver.db.playlists.find({'owner': ObjectId('ccff1bee2e21e1560a7dd004')}).count() == 0
-        assert driver.db.playlists.find({'_id': ObjectId('aaff1bee2e21e1560a7dd002')}).count() == 1
-
+        assert driver.db.playlists.find(
+            {'owner': ObjectId('ccff1bee2e21e1560a7dd004')}).count() == 0
+        assert driver.db.playlists.find(
+            {'_id': ObjectId('aaff1bee2e21e1560a7dd002')}).count() == 1

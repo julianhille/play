@@ -1,4 +1,3 @@
-from bson import ObjectId
 from flask import current_app
 from flask.ext.login import current_user
 from play.api.blueprint import Blueprint
