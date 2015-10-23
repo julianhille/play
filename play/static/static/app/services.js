@@ -5,6 +5,17 @@
     module.value('apiUrl', '//localhost:8000/api');
 
 
+    var createParams = function (params) {
+        var _params = angular.copy(params);
+        console.log(_params, params);
+        if (typeof params !== 'undefined') {
+            if (typeof _params.where !== 'undefined') {
+                _params.where = JSON.stringify(_params.where);
+            }
+        }
+        return _params;
+    }
+
     module.factory('TrackRepository', ['apiUrl', '$resource', '$http', function(apiUrl, $resource, $http) {
         var service = $resource(apiUrl + '/tracks/:trackId', {}, {
             query: {method:'GET', params:{trackId:''}},
@@ -19,7 +30,8 @@
             },
             query: function(search, success, error)
             {
-                return service.query(search, success, error);
+
+                return service.query(createParams(search), success, error);
             },
             get: function(trackId, success, error) {
                 return service.get({trackId: trackId}, success, error);
@@ -54,7 +66,7 @@
             },
             query: function(search, success, error)
             {
-                return service.query(search, success, error);
+                return service.query(createParams(search), success, error);
             },
             get: function(artistId, success, error) {
                 return service.get({artistId: artistId}, success, error);
@@ -89,7 +101,7 @@
             },
             query: function(search, success, error)
             {
-                return service.query(search, success, error);
+                return service.query(createParams(search), success, error);
             },
             get: function(directoryId, success, error) {
                 return service.get({directoryId: directoryId}, success, error);
@@ -128,7 +140,7 @@
             },
             query: function(search, success, error)
             {
-                return service.query(search, success, error);
+                return service.query(createParams(search), success, error);
             },
             get: function(userId, success, error) {
                 return service.get({userId: userId}, success, error);

@@ -109,12 +109,12 @@
                  $scope.directory =  DirectoryRepository.get(
                      directoryId,
                      function () {
-                         $scope.tracks = TrackRepository.query({max_results:0, where: JSON.stringify({parents_directory: directoryId})});
+                         $scope.tracks = TrackRepository.query({max_results:0, where: {parents_directory: directoryId}});
                      });
              } else if ($route.current.$$route.name === 'DirectoryEdit') {
                  $scope.directory =  DirectoryRepository.get($route.current.params.directoryId);
              } else {
-                 $scope.directories = DirectoryRepository.query({where: JSON.stringify({parent: null})});
+                 $scope.directories = DirectoryRepository.query({where: {parent: null}});
              }
 
              $scope.delete = function(directory) {
@@ -255,13 +255,14 @@
 
         $scope.updateArtists = function () {
             var search = angular.copy($scope.search);
+            var and = [];
             $scope.searchCriteria.forEach(function (criteria) {
-                if (!(criteria.field in search.where)) {
-                    search.where[criteria.field] = {'$in': []};
-                }
-                search.where[criteria.field]['$in'].push(criteria.value);
+                var criteria_object = {};
+                criteria_object[criteria.field] = {'$regex': criteria.value, '$options': 'i'};
+                and.push(criteria_object);
             });
-
+            if (and.length > 0)
+                search.where['$and'] = and;
             $scope.artists = ArtistRepository.query(search, function (data) {
                 $scope.currentPage = data._meta.page;
                 $scope.maxResults = data._meta.max_results;
