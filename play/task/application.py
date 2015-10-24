@@ -68,6 +68,7 @@ def scan_audio(file_path):
     name = os.path.splitext(file_name)[0]
     search = re.sub('([^0-9a-zA-Z]+)', ' ', name)
     insert = {
+        'active': True,
         'name': name,
         'search': {'file': search},
         'path': file_path,
