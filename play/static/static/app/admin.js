@@ -82,7 +82,7 @@
         $httpProvider.interceptors.push('APIInterceptor');
     }]);
 
-    app.run(function($rootScope, $location, MeService, MeRepository) {
+    app.run(function($rootScope, $location, MeService) {
         $rootScope.me = MeService;
         MeService.init();
     });

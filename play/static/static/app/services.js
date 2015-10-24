@@ -17,7 +17,7 @@
             }
         }
         return _params;
-    }
+    };
 
     module.factory('TrackRepository', ['apiUrl', '$resource', '$http', function(apiUrl, $resource, $http) {
         var service = $resource(apiUrl + '/tracks/:trackId', {}, {
@@ -272,13 +272,13 @@
         this.isAdmin = function () {
             return service.hasRole('admin');
         };
-        this.isLoggedIn = function(vsr) {
+        this.isLoggedIn = function() {
             return service.user !== null;
         };
         this.logout = function() {
-          MeRepository.logout(function() {
-              service.user = null;
-          });
+            MeRepository.logout(function() {
+                service.user = null;
+            });
         };
         this.init = function () {
             service.user = MeRepository.get();
