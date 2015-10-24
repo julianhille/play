@@ -138,3 +138,20 @@ def test_put_item_not_owner(testapp_api):
                     VALID_PLAYLIST,
                     headers=[('If-Match', response_get.headers['ETag'])])
     assert '403 FORBIDDEN' in str(context.value)
+
+
+def test_get_resource_public_playlists_owner_embedded(testapp_api):
+    with auth(testapp_api, user='admin_user_active'):
+        response = testapp_api.get('/playlists?embedded={"owner":1}')
+    assert response.status_code == 200
+    print(response)
+    assert all('password' not in v['owner'] for v in response.json_body['_items'])
+    assert all('roles' not in v['owner'] for v in response.json_body['_items'])
+
+
+def test_get_item_public_playlist_owner_embedded(testapp_api):
+    with auth(testapp_api, user='admin_user_active'):
+        response = testapp_api.get('/playlists/aaff1bee2e21e1560a7dd001?embedded={"owner":1}')
+    assert response.status_code == 200
+    assert 'password' not in response.json_body['owner']
+    assert 'roles' not in response.json_body['owner']

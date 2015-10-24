@@ -71,3 +71,20 @@ def ensure_user_is_owner_on_update(updates, original):
     if current_user._id != original['owner']:
         abort(403)
     updates['owner'] = current_user._id
+
+
+@blueprint.hook('on_fetched_resource')
+def ensure_password_removal_on_resource(items):
+    for item in items['_items']:
+        owner_fix(item)
+
+
+@blueprint.hook('on_fetched_item')
+def ensure_password_removal_on_item(item):
+    owner_fix(item)
+
+
+def owner_fix(item):
+    if 'owner' in item and isinstance(item['owner'], dict):
+        item['owner'].pop('password', None)
+        item['owner'].pop('roles', None)
