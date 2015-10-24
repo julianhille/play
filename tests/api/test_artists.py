@@ -1,5 +1,5 @@
 from copy import deepcopy
-from pytest import raises, mark
+from pytest import config, mark, raises
 from unittest.mock import patch, Mock
 from webtest import AppError
 
@@ -132,3 +132,11 @@ def test_delete_item_admin(testapp_api):
             response = testapp_api.delete('/artists/acb419b92e21e1560a7dd000', VALID_ARTIST,
                                           headers=[('If-Match', response_get.headers['ETag'])])
     assert response.status_code == 204
+
+
+@mark.skipif('mongomock' == config.getini('humongous_engine'),
+             reason="mongomock does not support $text")
+def test_fulltext_search(testapp_api):
+    with auth(testapp_api, user='user_active'):
+        response = testapp_api.get('/artists/?where={"$text": {"$search":"member"}}')
+    assert len(response.json_body['_items']) == 1
