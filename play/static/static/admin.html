@@ -24,7 +24,7 @@
                          <ul class="dropdown-menu">
                               <li><a href="#">{{ me.user.name }}</a></li>
                               <li role="presentation" class="divider"></li>
-                              <li><a href="" id="logout" ng-click="logout()">Logout</a></li>
+                              <li><a href="" id="logout" ng-click="me.logout()">Logout</a></li>
                           </ul>
                     </li>
                 </ul>
@@ -35,7 +35,7 @@
             <div ng-if="me.isLoggedIn()" class="has-error">
                 <p>You don't have sufficent rights.
                 Please logout and then login as administrator.
-                {{ me.user.name }} <button class="btn btn-default" type="button" ng-click="logout()">Logout</button>
+                {{ me.user.name }} <button class="btn btn-default" type="button" ng-click="me.logout()">Logout</button>
                 </p>
             </div>
             <form ng-if="!me.isLoggedIn()" id="login-form" method="POST" ng-submit="submit()">
@@ -251,7 +251,7 @@
             </div>
             <div class="form-group form-inline" ng-repeat="criteria in searchCriteria">
                 <label>Criteria:</label>
-                <select class="form-control"  ng-model="criteria.field">
+                <select ng-change="updateArtists()" class="form-control"  ng-model="criteria.field">
                     <option value="search">All</option>
                     <option value="name">Name</option>
                     <option value="namevariations">Name variations</option>

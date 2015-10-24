@@ -9,7 +9,7 @@
     app.value('apiUrl', '//localhost:8000/api');
 
 
-    app.service('APIInterceptor', ['$location', 'MeService', function($location, MeService) {
+    app.service('APIInterceptor', ['$location', function($location) {
         var service = this;
         service.request = function(config) {
             if(typeof config.params !== 'undefined' && typeof config.params._etag !== 'undefined') {
@@ -21,7 +21,7 @@
 
         service.responseError = function(response) {
             if (response.status === 401) {
-                MeService.setUser(null);
+                $location.refresh();
             }
             throw response;
         };
@@ -84,15 +84,7 @@
 
     app.run(function($rootScope, $location, MeService, MeRepository) {
         $rootScope.me = MeService;
-        MeRepository.get(
-            function(user) {
-                MeService.setUser(user);
-            }
-        );
-        $rootScope.logout = function() {
-            MeRepository.logout();
-            MeService.setUser(null);
-        };
+        MeService.init();
     });
 
     app.controller(

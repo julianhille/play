@@ -5,12 +5,15 @@
     module.value('apiUrl', '//localhost:8000/api');
 
 
-    var createParams = function (params) {
+    var createParams = function (params, merge) {
         var _params = angular.copy(params);
-        console.log(_params, params);
         if (typeof params !== 'undefined') {
+            angular.extend(_params, merge);
             if (typeof _params.where !== 'undefined') {
                 _params.where = JSON.stringify(_params.where);
+            }
+            if (typeof _params.embedded !== 'undefined') {
+                _params.embedded = JSON.stringify(_params.embedded);
             }
         }
         return _params;
@@ -198,20 +201,101 @@
     }]);
 
 
-    module.service('MeService', function() {
+    module.service('PlaylistRepository', function (apiUrl, $resource) {
+
+
+
+
+        /*
+        this.getPlaylists = function (callback, where) {
+            where = where ? '&where=' + JSON.stringify(where) : '';
+            $http.get(apiUrl + '/playlists?embedded={"tracks": 1, "owner": 1}' + where).success(function (data) {
+                callback(data);
+            });
+        };
+        this.getUserPlaylists = function (callback, user_id) {
+            this.getPlaylists(callback, {'owner': user_id});
+        };
+        this.getPlaylist = function (callback, id) {
+            $http.get(apiUrl + '/playlists/' + id + '/?embedded={"tracks": 1, "owner": 1}').success(function (data) {
+                callback(data);
+            });
+        };
+        this.createPlaylist = function (callback, playlist_name) {
+            $http.post(apiUrl + '/playlists/', {'name': playlist_name}).success(function (data) {
+                callback(data);
+            });
+
+        };*/
+
+        var service = $resource(apiUrl + '/playlists/:playlistId', {}, {
+            query: {method:'GET', params: {playlistId: ''}},
+            delete: {method: 'DELETE', cache: false},
+            get: {method: 'GET', cache: false},
+            patch: {method: 'PATCH', cache: false},
+            create: {method: 'POST', cache: false}
+        });
+
+        return {
+            delete: function(playlist, success, error) {
+                return service.delete({playlistId: playlist._id, _etag: playlist._etag}, success, error);
+            },
+            query: function(search, success, error)
+            {
+                return service.query(createParams(search), success, error);
+            },
+            get: function(playlistId, params, success, error) {
+                var _params = createParams(params, {playlistId: playlistId});
+                return service.get(_params, success, error);
+            },
+            patch: function (playlist, patch, success, error) {
+                var success_callback = function(data){
+                    playlist._etag = data._etag;
+                    if (typeof success !== 'undefined' )
+                        success(data);
+                };
+                return service.patch(
+                    {playlistId: playlist._id, _etag: playlist._etag}, patch, success_callback, error );
+            },
+            create: function (data, success, error) {
+                return service.create({}, data, success, error );
+            }
+        };
+    });
+
+    module.service('MeService', ['MeRepository', function(MeRepository) {
         var service = this;
         this.user = null;
         this.hasRole = function (role) {
-            return this.isLoggedIn() && (service.user.roles || []).indexOf(role) > -1;
+            return service.isLoggedIn() && (service.user.roles || []).indexOf(role) > -1;
         };
         this.isAdmin = function () {
-            return  this.hasRole('admin');
+            return service.hasRole('admin');
         };
-        this.isLoggedIn = function() {
+        this.isLoggedIn = function(vsr) {
             return service.user !== null;
         };
-        this.setUser = function(user) {
-            service.user = user;
-            return service.user;
+        this.logout = function() {
+          MeRepository.logout(function() {
+              service.user = null;
+          });
         };
-    });
+        this.init = function () {
+            service.user = MeRepository.get();
+        };
+    }]);
+
+
+    module.service('TrackService', ['TrackRepository', function (TrackRepository) {
+        this.track = null;
+        this.search = function (term) {
+            return TrackRepository.query({'where': {'$text': {'$search': term}}});
+        };
+    }]);
+
+    module.service('ArtistService', ['ArtistRepository', function (ArtistRepository) {
+        this.artists = null;
+        this.search = function (term) {
+            return ArtistRepository.query({'where': {'$text': {'$search': term}}});
+        };
+    }]);
