@@ -2,7 +2,6 @@
     'use strict';
 
     var app = angular.module('PlayApp', ['play.services', 'play.controller', 'ngRoute', 'rzModule', 'ui.bootstrap']);
-    app.value('apiUrl', '//localhost:8000/api');
 
     app.run(function($rootScope, $location, MeService) {
         $rootScope.me = MeService;
@@ -19,12 +18,27 @@
             templateUrl: 'templates/tracklist/playlist.html',
             controller: 'PlaylistController',
             name: 'PlaylistView'
+        }).when('/my/:playlistId', {
+            templateUrl: 'templates/tracklist/myplaylist.html',
+            controller: 'MyPlaylistController',
+            name: 'MyPlaylistView'
         }).when('/search/:term', {
             templateUrl: 'templates/tracklist/search.html',
             controller: 'SearchController',
             name: 'PlaylistView'
         });
         delete $httpProvider.defaults.headers.common['X-Requested-With'];
+        $httpProvider.interceptors.push([
+            '$injector',
+            function ($injector) {
+                return $injector.get('AuthInterceptor');
+            }
+        ],[
+            '$injector',
+            function ($injector) {
+                return $injector.get('EtagInterceptor');
+            }
+        ]);
     }]);
 
 
@@ -72,37 +86,41 @@
     }]);
 
 
-    app.controller('MePlaylistController', ['$scope', 'PlaylistRepository', 'MeService', function ($scope, PlaylistRepository, MeService) {
+    app.controller('MePlaylistController', ['$scope', 'MePlaylistService', function ($scope, MePlaylistService) {
         $scope.newItem = {'name': '', 'show': false};
-        $scope.me = MeService;
-        $scope.updatePlaylist = function () {
-            $scope.playlists = PlaylistRepository.query({'where': {'owner': MeService.user._id}});
-        };
+
         $scope.showNewItem = function() {
             $scope.newItem.show=true;
             $scope.newItem.name = '';
 
         };
+
         $scope.submitNew = function () {
-            PlaylistRepository.create({'name': $scope.newItem.name}, function () {
+            MePlaylistService.create($scope.newItem.name, function(){
                 $scope.newItem.show = false;
-                $scope.updatePlaylist();
             });
         };
-
-        $scope.playlist = [];
-        MeService.user.$promise.then($scope.updatePlaylist);
+        $scope.playlists = MePlaylistService.playlists;
     }]);
 
-    app.controller('PlaylistController', ['$scope', '$route', 'PlaylistRepository', function ($scope, $route, PlaylistRepository) {
-        $scope.playlist = PlaylistRepository.get($route.current.params.playlistId, {'embedded': {'owner': 1, 'tracks': 1}}) ;
+    app.controller('MyPlaylistController', ['$scope', '$filter', '$route', 'PlaylistRepository', 'MePlaylistService', function ($scope, $filter, $route, PlaylistRepository, MePlaylistService) {
+        var playlistId = $route.current.params.playlistId;
+        MePlaylistService.playlists.$promise.then(function(){
+            $scope.playlist = $filter('getByProperty')('_id', playlistId, MePlaylistService.playlists._items);
+        });
+    }]);
+
+    app.controller('PlaylistController', ['$scope', '$filter', '$route', 'PlaylistRepository', function ($scope, $filter, $route, PlaylistRepository) {
+        var playlistId = $route.current.params.playlistId;
+        $scope.playlist = PlaylistRepository.get(playlistId, {'embedded': {'owner': 1, 'tracks': 1}}) ;
     }]);
 
     app.directive('tracklist', ['Player', function (Player) {
         return {
             restrict: 'E',
             scope: {
-                tracks: '=tracks    '
+                tracks: '=tracks',
+                playlist: '=playlist'
             },
             controller: function ($scope) {
                 $scope.play = function(track) {
@@ -110,7 +128,6 @@
                 };
             },
             templateUrl: 'templates/tracklist/tracks.html'
-
         };
     }]);
 
@@ -118,30 +135,41 @@
         return {
             restrict: 'E',
             scope: {
-                track: '=track'
+                track: '=track',
+                playlist: '=playlist',
+                trackIndex: '=trackIndex'
             },
-            controller: function($scope) {
+            controller: function($scope, MePlaylistService) {
                 $scope.player = Player;
+                $scope.query = '';
+                $scope.playlists = MePlaylistService.playlists._items;
+                $scope.trackToPlaylist = function(track, playlist) {
+                    MePlaylistService.addTrack(track, playlist);
+                };
+                $scope.removeTrackFromPlaylist = function(index, playlist) {
+                    MePlaylistService.removeTrack(index, playlist);
+                };
             },
             templateUrl: 'templates/track_dropdown.html'
         };
     }]);
 
-    app.service('Player', ['apiUrl', function(apiUrl) {
+    app.service('Player', ['apiUrl', '$rootScope', function(apiUrl, $rootScope) {
         var service = this;
         this.queue = [];
-        this.currentTrack = null;
-        this.play = function(track) {
-            service.clearQueue();
-            service.queue.push(track);
-            service.currentTrack = service.getNextTrack();
-        };
-        this.getNextTrack = function() {
+
+        var playNextTrack = function() {
             if (service.queue.length > 0) {
-                service.currentTrack = service.queue.shift();
-                return service.currentTrack;
+                var track = service.queue.shift();
+                service.play(track);
             }
             return null;
+        };
+        var getStream = function(track) {
+            return apiUrl + '/tracks/stream/' + track._id;
+        };
+        this.play = function(track) {
+            $rootScope.$broadcast('audio.play', track, getStream(track));
         };
         this.addTrack = function (track) {
             service.queue.push(track);
@@ -149,10 +177,10 @@
         this.clearQueue = function() {
             service.queue = [];
         };
-        this.getStream = function(track) {
-            return apiUrl + '/tracks/stream/' + track._id;
-        };
 
+        $rootScope.$on('audio.nextTrack', function(){
+            playNextTrack();
+        });
     }]);
 
     app.directive('aplayer', function ($interval) {
@@ -163,20 +191,23 @@
             },
             templateUrl: 'templates/audioplayer.html',
             link: function () {},
-            controller: function ($scope, Player) {
+            controller: function ($scope, $rootScope, Player) {
+                $rootScope.$on('audio.play', function(event, track, stream){
+                    $scope.audio.src = stream;
+                    $scope.currentTrack = track;
+                    $scope.play();
+
+                });
+
+                $scope.playButton = 'glyphicon-play';
                 $scope.positionSlider = 0;
                 $scope.volumeSlider = 50;
                 $scope.volumeIcon = '';
                 $scope.player = Player;
+                $scope.queue = Player.queue;
                 $scope.audio = new Audio();
 
                 $scope.audio.volume = 0.6;
-                $scope.$watch('player.currentTrack', function () {
-                    if ($scope.player.currentTrack) {
-                        $scope.audio.src = $scope.player.getStream($scope.player.currentTrack);
-                        $scope.play();
-                    }
-                });
 
                 $scope.mute = function () {
                     $scope.audio.muted = !$scope.audio.muted;
@@ -184,32 +215,36 @@
 
                 $scope.play = function () {
                     if ($scope.audio.paused) {
-                        $scope.audio.src == null;
-                        $scope.player.getNextTrack();
-                        $scope.audio.play();
+                        if($scope.audio.src !== null) {
+                            $scope.audio.play();
+                        }
                     } else {
                         $scope.audio.pause();
                     }
                 };
 
-                $scope.$watch('audio.paused', function (newval) {
-                    if (newval) {
-                        $scope.playButton = 'glyphicon-play';
-                    } else {
+                $scope.playNext = function() {
+                    $rootScope.$broadcast('audio.nextTrack');
+                };
+
+                $scope.audio.addEventListener('play', function(){
+                    if (!$scope.audio.error && !!$scope.audio.src) {
                         $scope.playButton = 'glyphicon-pause';
+                    } else {
+                        $scope.audio.pause();
+                        $scope.playNext();
                     }
                 });
-
-                $scope.$watch('audio.muted', function () {
-                    $scope.volumeIcon = $scope.audio.muted ? 'glyphicon-volume-off' : 'glyphicon-volume-up';
+                $scope.audio.addEventListener('ended', function(){ $scope.playNext();});
+                $scope.audio.addEventListener('pause', function(){ $scope.playButton = 'glyphicon-play';});
+                $scope.audio.addEventListener('muted', function(){ $scope.volumeIcon = $scope.audio.muted ? 'glyphicon-volume-off' : 'glyphicon-volume-up';});
+                $scope.audio.addEventListener('error', function(){
+                    $scope.audio.pause();
+                    $scope.playNext();
                 });
 
-                $scope.$watch('audio.ended', function () {
-                    $scope.player.getNextTrack();
-                });
 
                 $interval(function () {
-                    $scope.ctime = $scope.audio.currentTime;
                     $scope.positionSlider = $scope.audio.currentTime;
                 }, 100);
 
@@ -225,4 +260,61 @@
     });
 
 
+    app.service('MePlaylistService', ['PlaylistRepository', 'MeService', '$rootScope', 'AUTH_EVENTS', function(PlaylistRepository, MeService, $rootScope, AUTH_EVENTS){
+        var service = this;
+
+        var createTrackList = function(playlist) {
+            var tracks = [];
+            playlist.tracks.forEach(function(item){
+                if (typeof item == 'string')
+                    tracks.push(item);
+                else
+                    tracks.push(item._id);
+            });
+            return tracks;
+        };
+
+        $rootScope.$on(AUTH_EVENTS.loginSuccess, function() {
+
+            service.update();
+        });
+
+        $rootScope.$on(AUTH_EVENTS.logoutSuccess, function() {
+            service.playlists = null;
+        });
+        this.update = function() {
+            service.playlists = PlaylistRepository.query({'where': {'owner': MeService.user._id}});
+        };
+
+
+        this.create = function(name, success, error) {
+            PlaylistRepository.create({'name': name}, function (data) {
+                if (success)
+                    success(data);
+                service.update();
+            }, function (response) {
+                if (error)
+                    error(response);
+            });
+        };
+
+        this.removeTrack = function(index, playlist) {
+            var tracks = createTrackList(playlist);
+            tracks.splice(index, 1);
+            PlaylistRepository.patch(playlist, {'tracks': tracks}, function() {
+                playlist.tracks.splice(index, 1);
+            });
+        };
+
+        this.addTrack = function(track, playlist) {
+            var tracks = createTrackList(playlist);
+            tracks.push(track._id);
+            PlaylistRepository.patch(playlist, {'tracks': tracks}, function() {
+                playlist.tracks.push(track);
+            });
+        };
+
+        this.playlists = null;
+
+    }]);
 }());

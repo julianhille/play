@@ -3,7 +3,38 @@
     'use strict';
     var module = angular.module('play.services', ['ngResource']);
     module.value('apiUrl', '//localhost:8000/api');
+    module.constant('AUTH_EVENTS', {
+        loginSuccess: 'auth-login-success',
+        loginFailed: 'auth-login-failed',
+        logoutSuccess: 'auth-logout-success',
+        notAuthenticated: 'auth-not-authenticated',
+        notAuthorized: 'auth-not-authorized'
+    });
 
+    module.factory('AuthInterceptor', ['$rootScope', 'AUTH_EVENTS', function ($rootScope, AUTH_EVENTS) {
+        return {
+            responseError: function (response) {
+                $rootScope.$broadcast({
+                    401: AUTH_EVENTS.notAuthenticated,
+                    403: AUTH_EVENTS.notAuthorized
+                }[response.status], response);
+                throw response;
+            }
+        };
+    }]);
+
+    module.factory('EtagInterceptor', function() {
+
+        return {
+            request: function(config) {
+                if(typeof config.params !== 'undefined' && typeof config.params._etag !== 'undefined') {
+                    config.headers['If-Match'] = config.params._etag;
+                    delete config.params._etag;
+                }
+                return config;
+            }
+        };
+    });
 
     var createParams = function (params, merge) {
         var _params = angular.copy(params);
@@ -203,31 +234,6 @@
 
     module.service('PlaylistRepository', function (apiUrl, $resource) {
 
-
-
-
-        /*
-        this.getPlaylists = function (callback, where) {
-            where = where ? '&where=' + JSON.stringify(where) : '';
-            $http.get(apiUrl + '/playlists?embedded={"tracks": 1, "owner": 1}' + where).success(function (data) {
-                callback(data);
-            });
-        };
-        this.getUserPlaylists = function (callback, user_id) {
-            this.getPlaylists(callback, {'owner': user_id});
-        };
-        this.getPlaylist = function (callback, id) {
-            $http.get(apiUrl + '/playlists/' + id + '/?embedded={"tracks": 1, "owner": 1}').success(function (data) {
-                callback(data);
-            });
-        };
-        this.createPlaylist = function (callback, playlist_name) {
-            $http.post(apiUrl + '/playlists/', {'name': playlist_name}).success(function (data) {
-                callback(data);
-            });
-
-        };*/
-
         var service = $resource(apiUrl + '/playlists/:playlistId', {}, {
             query: {method:'GET', params: {playlistId: ''}},
             delete: {method: 'DELETE', cache: false},
@@ -263,7 +269,7 @@
         };
     });
 
-    module.service('MeService', ['MeRepository', function(MeRepository) {
+    module.service('MeService', ['$rootScope', 'MeRepository', 'AUTH_EVENTS', function($rootScope, MeRepository, AUTH_EVENTS) {
         var service = this;
         this.user = null;
         this.hasRole = function (role) {
@@ -273,15 +279,22 @@
             return service.hasRole('admin');
         };
         this.isLoggedIn = function() {
-            return service.user !== null;
+            return !!service.user && !!service.user._id;
         };
         this.logout = function() {
             MeRepository.logout(function() {
                 service.user = null;
+                $rootScope.$broadcast(AUTH_EVENTS.logoutSuccess);
             });
         };
+        this.setUser = function(user) {
+            service.user = user;
+        };
         this.init = function () {
-            service.user = MeRepository.get();
+            service.user = MeRepository.get(function() {
+                $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+            });
+
         };
     }]);
 
@@ -292,6 +305,7 @@
             return TrackRepository.query({'where': {'$text': {'$search': term}}});
         };
     }]);
+
 
     module.service('ArtistService', ['ArtistRepository', function (ArtistRepository) {
         this.artists = null;

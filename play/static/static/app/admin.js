@@ -6,26 +6,6 @@
 
 
 
-    app.value('apiUrl', '//localhost:8000/api');
-
-
-    app.service('APIInterceptor', ['$location', function($location) {
-        var service = this;
-        service.request = function(config) {
-            if(typeof config.params !== 'undefined' && typeof config.params._etag !== 'undefined') {
-                config.headers['If-Match'] = config.params._etag;
-                delete config.params._etag;
-            }
-            return config;
-        };
-
-        service.responseError = function(response) {
-            if (response.status === 401) {
-                $location.refresh();
-            }
-            throw response;
-        };
-    }]);
 
     app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
         $routeProvider.when('/directories', {
@@ -79,7 +59,17 @@
             redirectTo: '/directories'
         });
 
-        $httpProvider.interceptors.push('APIInterceptor');
+        $httpProvider.interceptors.push([
+            '$injector',
+            function ($injector) {
+                return $injector.get('AuthInterceptor');
+            }
+        ],[
+            '$injector',
+            function ($injector) {
+                return $injector.get('EtagInterceptor');
+            }
+        ]);
     }]);
 
     app.run(function($rootScope, $location, MeService) {

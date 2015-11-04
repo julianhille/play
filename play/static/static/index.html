@@ -8,7 +8,7 @@
 
   <div class="full">
 
-    <nav class="navbar navbar-default navbar-fixed-top" role="navigation" id="top-menu">
+    <nav class="navbar navbar-default navbar-collapse navbar-fixed-top" role="navigation" id="top-menu">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
                 <span class="sr-only">Toggle navigation</span>
@@ -44,8 +44,8 @@
             </form>
           </div>
           <ul class="nav navbar-nav navbar-right">
-              <li class="dropdown">
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">me <b class="caret"></b></a>
+              <li class="dropdown" uib-dropdown>
+                  <a href="" uib-dropdown-toggle class="dropdown-toggle" data-toggle="dropdown">me <b class="caret"></b></a>
                   <ul class="dropdown-menu">
                       <li><a href="#">{{ me.user.name }}</a></li>
                       <li role="presentation" class="divider"></li>
@@ -55,7 +55,7 @@
           </ul>
         </div><!-- /.navbar-collapse -->
     </nav>
-    <div class="header-placeholder" style="height:50px;"></div>
+    <div class="header-placeholder" style="height:55px;"></div>
     <div class="container-fluid">
        <div  ng-if="!me.isLoggedIn()" ng-controller="LoginController" class="container-fluid">
             <form id="login-form" method="POST" ng-submit="submit()">
@@ -80,9 +80,9 @@
 
         </div>
 
-      <div class="container-fluid" ng-if="me.isLoggedIn('var') == true">
+      <div class="container-fluid" ng-if="me.isLoggedIn() == true">
         <div ng-controller="MePlaylistController" class="col-md-3">
-            <div id="playlists">
+            <div id="playlists">{{ a  }}
                 <div id="playlists-list" class="list-group">
 
                     <div class="list-group-item navbar-form">
@@ -120,34 +120,34 @@
                 <img src="" />
             </div>
             <div id="playlist-trackinfos" class="row">
-                <span>{{ player.currentTrack.name }}</span>
+                <span>{{ currentTrack.name }}</span>
             </div>
             <div class="row">
-                <rzslider rz-slider-model="positionSlider" rz-slider-always-show-bar="1" rz-slider-tpl-url="sliderTemplate.html" rz-slider-step="0.09" rz-slider-ceil="audio.length.toFixed()" rz-slider-precision="1" rz-slider-on-change="changetime()"></rzslider>
+                <rzslider rz-slider-model="audio.currentTime" rz-slider-always-show-bar="1" rz-slider-tpl-url="sliderTemplate.html" rz-slider-step="0.09" rz-slider-ceil="audio.duration.toFixed()" rz-slider-precision="1" rz-slider-on-change="changetime()"></rzslider>
             </div>
             <div class="row">
                    <span class="" id="player-current-time">{{ audio.currentTime | duration }}</span>
-                   <span class="pull-right" id="player-duration">{{ audio.length | duration }}</span>
+                   <span class="pull-right" id="player-duration">{{ audio.duration | duration }}</span>
             </div>
             <div id="player-volume-control" class="row">
                 <span class="glyphicon ng-class: volumeIcon" ng-click="mute()"></span>
                 <rzslider rz-slider-model="volumeSlider" rz-slider-hide-limit-labels="1" rz-slider-always-show-bar="1" rz-slider-tpl-url="sliderTemplate.html" rz-slider-step="0.1" rz-slider-ceil="100" rz-slider-precision="1" rz-slider-on-change="changevol()"></rzslider>
             </div>
             <div id="player-play-control" class="row">
-               <span class="glyphicon glyphicon-step-backward"></span>
                <span id="player-play" class="glyphicon ng-class: playButton" ng-click="play()"></span>
-               <span class="glyphicon glyphicon-step-forward"></span>
+               <span ng-click="playNext()" class="glyphicon glyphicon-step-forward"></span>
             </div>
             <div class="row">
                 <span class="glyphicon glyphicon-random hidden"></span>
                 <span class="glyphicon glyphicon-repeat hidden"></span>
             </div>
             <div class="row">
+                <a href="" ng-click="player.clearQueue()"><span class="glyphicon glyphicon-trash"></span></a>
                 <ul class="list-group">
                      <li class="list-group-item row" ng-repeat="track in player.queue track by $index">
                         <p class="col-md-2">
                             <span class="badge" >{{ track.length | duration }}</span>
-                            </p>
+                        </p>
                         <a href="" class="col-md-9" ng-click=""><span>{{ track.name }}</span></a>
                          <track-dropdown class="pull" track="track"></track-dropdown>
                      </li>
@@ -170,7 +170,26 @@
             playlist complte length: <%= duration %>
           </div>
         </div>
-        <tracklist tracks="playlist.tracks"></tracklist>
+        <tracklist playlist="playlist" tracks="playlist.tracks"></tracklist>
+    </div>
+</script>
+
+
+<script type="text/ng-template" id="templates/tracklist/myplaylist.html">
+    <div>
+        <div class="row" >
+          <div class="col-md-4">
+            Playlistname: {{ playlist.name }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            created by: {{ playlist.owner.name }} -
+            Tracks: {{ playlist.tracks.length }}
+            playlist complte length: <%= duration %>
+          </div>
+        </div>
+        <tracklist playlist="playlist" tracks="playlist.tracks"></tracklist>
     </div>
 </script>
 
@@ -218,14 +237,22 @@
 </script>
 
 <script type="text/ng-template" id="templates/track_dropdown.html">
-    <div uib-dropdown>
+    <div uib-dropdown auto-close="outsideClick">
         <button type="button" class="edit-track btn badge btn-default" uib-dropdown-toggle>
             <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-        </button>
+        </button>{{ showPlaylist }}
         <ul class="uib-dropdown-menu" role="menu" aria-labelledby="single-button">
             <li role="menuitem"><a href="" ng-click="player.play(track)">Play</a></li>
             <li role="menuitem"><a href="" ng-click="player.addTrack(track)">Add to queue</a></li>
-            <li role="menuitem"><a href="#">Add to playlist</a></li>
+            <li ng-if="!!playlist" role="menuitem"><a href="" ng-click="removeTrackFromPlaylist(trackIndex, playlist)">{{ playlist.name  }}{{ trackIndex }}Remove</a></li>
+            <li class="dropdown-submenu" tabindex="-1" role="menuitem">
+                <a  href="">Add to playlist</a>
+                <ul class="dropdown-menu">
+                    <li role="menuitem"><input class="form-group form-control" type="text" ng-model="query" placeholder="Filter by" autofocus /></li>
+                    <li ng-repeat="playlist in playlists | filter:{ name: query} | orderBy: 'name'"><a ng-click="trackToPlaylist(track, playlist)" tabindex="-1" href="">{{ playlist.name }}</a></li>
+                </ul>
+
+            </li>
         </ul>
     </div>
 </script>
@@ -243,11 +270,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="track in tracks">
+        <tr ng-repeat="track in tracks track by $index">
           <td class="table-button"><span ng-click="play(track)" class="play-track glyphicon glyphicon-play"></span></td>
           <td>{{ track.name }}</td>
           <td class="table-button">
-              <track-dropdown track="track"></track-dropdown>
+              <track-dropdown track="track" track-index="$index" playlist="playlist"></track-dropdown>
           </td>
           <td class="table-button"><span class="badge">{{ track.length | duration}}</span></td>
         </tr>
@@ -273,8 +300,6 @@
 
     <script src="/static/js/angular.js"></script>
     <script src="/static/js/angular-route.js"></script>
-    <script src="/static/js/jquery.min.js"></script>
-    <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/angular-route.js"></script>
     <script src="/static/js/angular-ui.js"></script>
     <script src="/static/js/angular-resource.js"></script>
@@ -304,6 +329,15 @@
             padding-top: 1px;
             padding-bottom: 3px;
         }
+
+
+        .dropdown-submenu{position:relative;}
+.dropdown-submenu>.dropdown-menu{top:0;left:100%;margin-top:-6px;margin-left:-1px;-webkit-border-radius:0 6px 6px 6px;-moz-border-radius:0 6px 6px 6px;border-radius:0 6px 6px 6px;}
+.dropdown-submenu:hover>.dropdown-menu{display:block;}
+.dropdown-submenu>a:after{display:block;content:" ";float:right;width:0;height:0;border-color:transparent;border-style:solid;border-width:5px 0 5px 5px;border-left-color:#cccccc;margin-top:5px;margin-right:-10px;}
+.dropdown-submenu:hover>a:after{border-left-color:#ffffff;}
+.dropdown-submenu.pull-left{float:none;}.dropdown-submenu.pull-left>.dropdown-menu{left:-100%;margin-left:10px;-webkit-border-radius:6px 0 6px 6px;-moz-border-radius:6px 0 6px 6px;border-radius:6px 0 6px 6px;}
+
     </style>
 
 
