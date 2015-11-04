@@ -279,7 +279,7 @@
             return service.hasRole('admin');
         };
         this.isLoggedIn = function() {
-            return !!service.user && !!service.user._id
+            return !!service.user && !!service.user._id;
         };
         this.logout = function() {
             MeRepository.logout(function() {

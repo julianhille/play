@@ -3,7 +3,7 @@
 
     var app = angular.module('PlayApp', ['play.services', 'play.controller', 'ngRoute', 'rzModule', 'ui.bootstrap']);
 
-    app.run(function($rootScope, $location, MeService, MePlaylistService) {
+    app.run(function($rootScope, $location, MeService) {
         $rootScope.me = MeService;
         MeService.init();
         $rootScope.searchForm = {term: ''};
@@ -96,7 +96,7 @@
         };
 
         $scope.submitNew = function () {
-            MePlaylistService.create($scope.newItem.name, function(data){
+            MePlaylistService.create($scope.newItem.name, function(){
                 $scope.newItem.show = false;
             });
         };
@@ -110,7 +110,7 @@
         });
     }]);
 
-    app.controller('PlaylistController', ['$scope', '$filter', '$route', 'PlaylistRepository', 'MePlaylistService', function ($scope, $filter, $route, PlaylistRepository, MePlaylistService) {
+    app.controller('PlaylistController', ['$scope', '$filter', '$route', 'PlaylistRepository', function ($scope, $filter, $route, PlaylistRepository) {
         var playlistId = $route.current.params.playlistId;
         $scope.playlist = PlaylistRepository.get(playlistId, {'embedded': {'owner': 1, 'tracks': 1}}) ;
     }]);
