@@ -60,7 +60,7 @@ blueprint = Blueprint('tracks', __name__, SCHEMA, url_prefix='/tracks')
 
 @blueprint.hook('on_pre_GET')
 def ensure_only_active(request, lookup):
-    if not current_user.is_authenticated or not current_user.has_role(['admin']):
+    if not current_user.has_role(['admin']):
         lookup['active'] = True
 
 
@@ -72,7 +72,6 @@ def stream(track_id):
     if not current_user.has_role(['admin']):
         lookup['active'] = True
     track = current_app.data.driver.db['tracks'].find_one(lookup, {'path': 1, 'hash': 1})
-    print(track)
     if not track:
         abort(404)
 

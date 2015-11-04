@@ -6,6 +6,7 @@ def ensure_indices(db):  # nocov
     db.artists.create_index([('name', pymongo.DESCENDING)], background=True)
     db.artists.create_index([('search', pymongo.DESCENDING)], background=True)
     db.artists.create_index([('discogs_id', pymongo.DESCENDING)], background=True)
+    db.artists.create_index([('search', pymongo.TEXT)], background=True)
 
     # users
     db.users.create_index([('name', pymongo.DESCENDING)], unique=True, background=True)

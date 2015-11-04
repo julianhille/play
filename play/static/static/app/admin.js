@@ -1,31 +1,15 @@
 (function() {
     'use strict';
 
-    var app = angular.module('PlayAdminApp', ['play.services', 'ngRoute', 'ngResource', 'ui.bootstrap']);
+    var app = angular.module('PlayAdminApp', ['play.services', 'play.controller',  'ngRoute', 'ngResource', 'ui.bootstrap']);
 
 
-    app.controller('LoginController', ['$scope', '$location', 'MeRepository', 'MeService', function ($scope, $location, MeRepository, MeService) {
-        $scope.name ='';
-        $scope.password = '';
-        $scope.remember = false;
-        $scope.submit = function () {
-            MeRepository.login(
-                $scope.name,
-                $scope.password,
-                $scope.remember,
-                function(user) {
-                    MeService.setUser(user);
 
-                }
-            );
-            return false;
-        };
-    }]);
 
     app.value('apiUrl', '//localhost:8000/api');
 
 
-    app.service('APIInterceptor', ['$location', 'MeService', function($location, MeService) {
+    app.service('APIInterceptor', ['$location', function($location) {
         var service = this;
         service.request = function(config) {
             if(typeof config.params !== 'undefined' && typeof config.params._etag !== 'undefined') {
@@ -37,7 +21,7 @@
 
         service.responseError = function(response) {
             if (response.status === 401) {
-                MeService.setUser(null);
+                $location.refresh();
             }
             throw response;
         };
@@ -98,17 +82,9 @@
         $httpProvider.interceptors.push('APIInterceptor');
     }]);
 
-    app.run(function($rootScope, $location, MeService, MeRepository) {
+    app.run(function($rootScope, $location, MeService) {
         $rootScope.me = MeService;
-        MeRepository.get(
-            function(user) {
-                MeService.setUser(user);
-            }
-        );
-        $rootScope.logout = function() {
-            MeRepository.logout();
-            MeService.setUser(null);
-        };
+        MeService.init();
     });
 
     app.controller(
@@ -125,12 +101,12 @@
                  $scope.directory =  DirectoryRepository.get(
                      directoryId,
                      function () {
-                         $scope.tracks = TrackRepository.query({max_results:0, where: JSON.stringify({parents_directory: directoryId})});
+                         $scope.tracks = TrackRepository.query({max_results:0, where: {parents_directory: directoryId}});
                      });
              } else if ($route.current.$$route.name === 'DirectoryEdit') {
                  $scope.directory =  DirectoryRepository.get($route.current.params.directoryId);
              } else {
-                 $scope.directories = DirectoryRepository.query({where: JSON.stringify({parent: null})});
+                 $scope.directories = DirectoryRepository.query({where: {parent: null}});
              }
 
              $scope.delete = function(directory) {
@@ -271,13 +247,14 @@
 
         $scope.updateArtists = function () {
             var search = angular.copy($scope.search);
+            var and = [];
             $scope.searchCriteria.forEach(function (criteria) {
-                if (!(criteria.field in search.where)) {
-                    search.where[criteria.field] = {'$in': []};
-                }
-                search.where[criteria.field]['$in'].push(criteria.value);
+                var criteria_object = {};
+                criteria_object[criteria.field] = {'$regex': criteria.value, '$options': 'i'};
+                and.push(criteria_object);
             });
-
+            if (and.length > 0)
+                search.where['$and'] = and;
             $scope.artists = ArtistRepository.query(search, function (data) {
                 $scope.currentPage = data._meta.page;
                 $scope.maxResults = data._meta.max_results;
