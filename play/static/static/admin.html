@@ -12,7 +12,7 @@
                 <div class="navbar-header">
                     <span class="navbar-brand" href="#">Playme</span>
                 </div>
-                <ul class="nav navbar-nav">
+                <ul ng-if="me.isAdmin()" class="nav navbar-nav">
                     <li><a href="#/directories" id="navbar-playlists">Directories</a></li>
                     <li><a href="#/tracks" id="navbar-playlists">Tracks</a></li>
                     <li><a href="#/users" id="navbar-playlists">Users</a></li>
@@ -30,8 +30,8 @@
                 </ul>
            </div>
         </nav>
-        <div  ng-if="me.isAdmin()" ng-view class="container-fluid"></div>
-        <div  ng-if="!me.isAdmin()" ng-controller="LoginController" class="container-fluid">
+        <div ng-if="me.isAdmin()" ng-view class="container-fluid"></div>
+        <div ng-if="!me.isAdmin()" ng-controller="LoginController" class="container-fluid">
             <div ng-if="me.isLoggedIn()" class="has-error">
                 <p>You don't have sufficent rights.
                 Please logout and then login as administrator.
