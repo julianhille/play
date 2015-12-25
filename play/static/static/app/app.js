@@ -275,7 +275,6 @@
         };
 
         $rootScope.$on(AUTH_EVENTS.loginSuccess, function() {
-
             service.update();
         });
 
@@ -315,6 +314,9 @@
         };
 
         this.playlists = null;
+        if (MeService.isLoggedIn()) {
+            service.update();
+        }
 
     }]);
 }());
