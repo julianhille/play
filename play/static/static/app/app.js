@@ -8,7 +8,7 @@
         MeService.init();
         $rootScope.searchForm = {term: ''};
         $rootScope.searchSubmit = function searchSubmit() {
-            $location.path('/search/' + $rootScope.searchForm.term);
+            $location.url('/search?q=' + $rootScope.searchForm.term);
         };
     });
 
@@ -22,7 +22,7 @@
             templateUrl: 'templates/tracklist/myplaylist.html',
             controller: 'MyPlaylistController',
             name: 'MyPlaylistView'
-        }).when('/search/:term', {
+        }).when('/search', {
             templateUrl: 'templates/tracklist/search.html',
             controller: 'SearchController',
             name: 'PlaylistView'
@@ -79,10 +79,12 @@
     });
 
     app.controller('SearchController', ['$scope', '$route', 'TrackService', 'ArtistService', function SearchController($scope, $route, TrackService, ArtistService) {
-        $scope.term = $route.current.params.term;
-        $scope.search = {
-            'tracks': TrackService.search($scope.term, {'embedded': {'owner': 1, 'tracks': 1}}),
-            'artists': ArtistService.search($scope.term, {'embedded': {'owner': 1, 'tracks': 1}})};
+        $scope.term = $route.current.params.q;
+        if ($scope.term.length > 0) {
+            $scope.search = {
+                'tracks': TrackService.search($scope.term, {'embedded': {'owner': 1, 'tracks': 1}}),
+                'artists': ArtistService.search($scope.term, {'embedded': {'owner': 1, 'tracks': 1}})};
+        }
     }]);
 
 
