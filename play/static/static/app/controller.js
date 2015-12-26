@@ -19,13 +19,13 @@
                 }
             );
             return false;
-        };
+        }
 
         function resetForm() {
             $scope.name ='';
             $scope.password = '';
             $scope.remember = false;
-        };
+        }
 
         resetForm();
     }]);
