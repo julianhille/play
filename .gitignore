@@ -72,3 +72,5 @@ target/
 *.swp
 *.swo
 
+#Project specific
+play/settings.ini

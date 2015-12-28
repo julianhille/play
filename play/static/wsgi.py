@@ -1,11 +1,8 @@
 from flask import Flask, send_from_directory
+from play.utils import add_logging
 
-
-def create_application():
-    return Flask(__name__, static_folder='static', static_url_path='/static')
-
-
-application = create_application()
+application = Flask(__name__, static_folder='../static_files', static_url_path='/static')
+add_logging(application)
 
 
 @application.route('/')

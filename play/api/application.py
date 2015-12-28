@@ -1,14 +1,14 @@
+import mimetypes
+import os
+import re
+
 from eve import Eve
 from eve.io import mongo
 from eve.utils import config
 from flask import Config, request, send_file, Response
 from flask.helpers import get_root_path
 from flask.ext.login import current_user
-import mimetypes
-import os
-import re
 
-from play import default_settings
 from play.api.auth import SessionAuth
 
 
@@ -47,7 +47,8 @@ class Application(object):
 
     def __init__(self, settings=None):
         self.settings = Config(get_root_path(__name__))
-        self.settings.from_object(default_settings)
+        self.settings.from_object('play.default_settings.config')
+        self.settings.from_envvar('PLAY_CONFIGURATION', silent=True)
         if 'DOMAIN' not in self.settings:
             self.settings['DOMAIN'] = {}
         self._blueprints = []

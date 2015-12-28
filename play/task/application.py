@@ -11,7 +11,9 @@ from .utils import hash_file
 
 
 def _create_app():
-    app = Celery(__name__, config_source='play.default_settings')
+    app = Celery(__name__)
+    app.config_from_object('play.default_settings.config')
+    app.config_from_envvar('PLAY_CONFIGURATION', silent=True)
     return app
 
 

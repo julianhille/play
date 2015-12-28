@@ -1,6 +1,24 @@
 CHANGES
 =======
 
+* fixes eslint issue
+* Fixes a search parameter issue and now uses parameter instead of a part in the path for search term
+* Changes anonymouse functions to named functions for better debugging
+* Fixes update playlist issue
+* Fixes exposure of admin menu without beeing an admin
+* Pep8/eslint fixes
+* Adds some more logic and changes to js and html
+* Adds test for track deletion post processing
+* Bigger refactor and new features added for the frontend
+* Bugfix: fixes a active issue for none admin users and removes a print statement
+* Fixing scan where active field was missing
+* Test for new text index on artists search field
+* Owner removal of bad fields if embedding on playlists
+* Adds search index to artists search field
+* more services
+* Moved the json stringify to the repositories
+* Adding more possibilities and logic to services. Makes login controller reusable
+* Adds backend login logic
 * Adds admin right to /me route also adds possiblity to retrieve roles of the user. Adds test for both
 * Adds test for static routes and adds a admin route
 * Adds meta data from mp3 files to the backend and tests for that logic. Also changes the text indexing for the search field
