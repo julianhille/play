@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 from webtest import TestApp
 from flask.ext.login import AnonymousUserMixin
 
+
 from play.api.wsgi import create_app as api
 from play.task.application import application as task_app
 from play.models.users import LoginUser
@@ -16,12 +17,15 @@ from play.static.wsgi import application as static_app
 @pytest.fixture(autouse=True)
 def testapp_api(request, humongous):
     ensure_indices(humongous)
-    with patch('flask.ext.pymongo.MongoClient', Mock(return_value={'play': humongous})):
-        factory = api
-        marker = request.node.get_marker('app_factory')
-        if marker:
-            factory = marker.kwargs.get('factory', api)
+
+    factory = api
+    marker = request.node.get_marker('app_factory')
+    if marker:
+        factory = marker.kwargs.get('factory', api)
+    with patch('eve.io.mongo.mongo.Mongo.pymongo'):
         app = factory()
+    app.data.pymongo = Mock(return_value=Mock(db=humongous))
+    app.data.mongo_prefix = None
     app.debug = True
     return TestApp(app)
 
@@ -79,3 +83,12 @@ def testapp_static(request):
     app = factory()
     app.debug = True
     return TestApp(app)
+
+
+def is_mongomock():
+    if('mongomock' == pytest.config.getoption('humongous_engine')):
+        return True
+    elif pytest.config.getoption('humongous_engine') is None:
+        return 'mongomock' == pytest.config.getini('humongous_engine')
+    else:
+        return False
