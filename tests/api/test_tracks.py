@@ -1,9 +1,9 @@
 from bson import ObjectId
-from pytest import raises, mark, config
-from unittest.mock import patch, Mock
+from pytest import mark, raises
+from unittest.mock import Mock, patch
 from webtest import AppError
 
-from tests.conftest import auth
+from tests.conftest import auth, is_mongomock
 
 
 def test_get_resource_no_auth(testapp_api):
@@ -191,8 +191,7 @@ def test_get_stream_id_found_invalid_file(testapp_api):
     assert '500 INTERNAL SERVER ERROR' in str(context.value)
 
 
-@mark.skipif('mongomock' == config.getini('humongous_engine'),
-             reason="mongomock does not support $text")
+@mark.skipif(is_mongomock(), reason="mongomock does not support $text")
 def test_fulltext_search(testapp_api):
     with auth(testapp_api, user='user_active'):
         response = testapp_api.get('/tracks/?where={"$text": {"$search":"file"}}')
