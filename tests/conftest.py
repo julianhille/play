@@ -9,7 +9,7 @@ from flask.ext.login import AnonymousUserMixin
 
 from play.api.wsgi import create_app as api
 from play.task.application import application as task_app
-from play.models.users import LoginUser
+from play.models.users import get_user_by_name
 from play.mongo import ensure_indices
 from play.static.wsgi import application as static_app
 
@@ -34,7 +34,7 @@ def testapp_api(request, humongous):
 def auth(testapp_api, user):
     def check_auth(*args, **kwargs):
         nonlocal user
-        return (LoginUser.get_by_name(testapp_api.app.data.driver.db.users, user) or
+        return (get_user_by_name(testapp_api.app.data.driver.db.users, user) or
                 AnonymousUserMixin())
     with patch.object(testapp_api.app.login_manager, 'request_callback', check_auth):
         yield

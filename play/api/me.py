@@ -7,7 +7,7 @@ from flask.ext.login import current_user, login_user, logout_user
 from flask.ext.wtf.csrf import generate_csrf
 
 from play.api.blueprint import Blueprint
-from play.models.users import UserLoginForm, LoginUser
+from play.models import users
 
 SCHEMA = {
     'item_title': 'me',
@@ -68,7 +68,7 @@ def ensure_password_encoding(documents):
     if len(documents) > 1:
         abort(400, 'no bulk insertion is allowed')
     for document in documents:
-        document['password'] = LoginUser.hash_password(document['password'])
+        document['password'] = users.hash_password(document['password'])
         document['active'] = False
         document['roles'] = ['user']
 
@@ -90,16 +90,16 @@ def home():
 @blueprint.hook('on_update')
 def replace_password(document, original):
     if 'password' in document:
-        document['password'] = LoginUser.hash_password(document['password'])
+        document['password'] = users.hash_password(document['password'])
 
 
 @blueprint.route('/login', methods=['POST', 'GET'])
 def login():
     if current_user.is_authenticated:
         abort(409, 'user already logged in')
-    form = UserLoginForm()
+    form = users.UserLoginForm()
     if form.validate_on_submit():
-        user = LoginUser.get_by_name(
+        user = users.get_user_by_name(
             current_app.data.driver.db.users, form.username.data)
         if user and user.authenticate(form.password.data) and login_user(user):
             return redirect(url_for('me.home'))
