@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from play.models.users import LoginUser
+from play.models.users import get_user, hash_password, LoginUser
 from bcrypt import hashpw, gensalt
 
 
@@ -24,7 +24,7 @@ def test_get_id():
 
 
 def test_get(humongous):
-    assert not LoginUser.get(humongous, 'Not AT Object Id')
+    assert not get_user(humongous, 'Not AT Object Id')
 
 
 def test_authenticate():
@@ -46,6 +46,6 @@ def test_get_attr():
 @patch('play.models.users.hashpw')
 def test_hash_pw(hashpw, gensalt):
     gensalt.return_value = 'some salt'
-    LoginUser.hash_password('password')
+    hash_password('password')
     hashpw.assert_called_once_with(b'password', 'some salt')
     gensalt.assert_called_once_with()

@@ -6,6 +6,27 @@ from hmac import compare_digest
 from wtforms import validators, fields
 
 
+def hash_password(password):
+    password = password.encode('UTF-8')
+    return hashpw(password, gensalt()).decode('UTF-8')
+
+
+def get_user_by_name(db, username, allowed_roles=None):
+    lookup = {'name': username}
+    if allowed_roles:
+        lookup['roles'] = {'$in': allowed_roles}
+    user = db.find_one(lookup)
+    return LoginUser(user) if user else None
+
+
+def get_user(db, user_id):
+    try:
+        user = db.find_one({'_id': ObjectId(user_id)})
+    except (InvalidId, TypeError):
+        return False
+    return LoginUser(user) if user else None
+
+
 class LoginUser(UserMixin):
 
     def __init__(self, user):
@@ -27,11 +48,6 @@ class LoginUser(UserMixin):
             return True
         return False
 
-    @staticmethod
-    def hash_password(password):
-        password = password.encode('UTF-8')
-        return hashpw(password, gensalt())
-
     def get_id(self):
         return str(self.user['_id'])
 
@@ -41,25 +57,9 @@ class LoginUser(UserMixin):
 
         return bool(set(self.roles).intersection(roles))
 
-    @staticmethod
-    def get_by_name(db, username, allowed_roles=None):
-        lookup = {'name': username}
-        if allowed_roles:
-            lookup['roles'] = {'$in': allowed_roles}
-        user = db.find_one(lookup)
-        return LoginUser(user) if user else None
-
     def __getattr__(self, item):
         if item in self.user:
             return self.user[item]
-
-    @staticmethod
-    def get(db, user_id):
-        try:
-            user = db.find_one({'_id': ObjectId(user_id)})
-        except (InvalidId, TypeError):
-            return False
-        return LoginUser(user) if user else None
 
 
 class UserLoginForm(Form):

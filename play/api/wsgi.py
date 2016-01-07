@@ -4,7 +4,7 @@ from flask.ext.wtf.csrf import CsrfProtect
 
 from play.api.application import Application
 from play.api import albums, artists, csrf, directories, me, playlists, tracks, users
-from play.models.users import LoginUser
+from play.models.users import get_user
 
 settings = {
     'DOMAIN': {
@@ -13,7 +13,7 @@ settings = {
 
 
 def _user_loader(user_id):
-    return LoginUser.get(current_app.data.driver.db['users'], user_id)
+    return get_user(current_app.data.driver.db['users'], user_id)
 
 
 def create_app():

@@ -1,7 +1,7 @@
 from pytest import raises, mark
 from unittest.mock import patch, Mock
 from webtest import AppError
-from play.models.users import LoginUser
+from play.models.users import get_user_by_name
 from tests.conftest import auth
 
 
@@ -118,16 +118,16 @@ def test_get_item_user(testapp_api, user):
 
 
 def test_patch_password_item_user(testapp_api, humongous):
-    user_before = LoginUser.get_by_name(humongous.users, 'user_active')
+    user_before = get_user_by_name(humongous.users, 'user_active')
     login_user = Mock(hash_password=Mock(return_value="some_password"))
     with auth(testapp_api, user='user_active'):
-        with patch('play.api.me.LoginUser', login_user):
+        with patch('play.api.me.users', login_user):
             with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
                 response_get = testapp_api.get('/me')
                 response = testapp_api.patch_json(
                     '/me', {'password': 'abcdef'},
                     headers=[('If-Match', response_get.headers['ETag'])])
-    user_after = LoginUser.get_by_name(humongous.users, 'user_active')
+    user_after = get_user_by_name(humongous.users, 'user_active')
     login_user.hash_password.assert_called_once_with('abcdef')
     assert user_before.password != user_after.password
     assert user_after.password == 'some_password'
