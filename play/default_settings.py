@@ -1,45 +1,14 @@
-from configparser import ConfigParser
-from os import path
 from uuid import uuid4
 
 from bson import BSON
-from flask.helpers import get_root_path
 from kombu.serialization import register
 from pymongo.uri_parser import parse_uri
 
 
-class BaseConfig(object):
+class Config(object):
+    # This should be configured
     SECRET_KEY = str(uuid4())
     WTF_CSRF_SECRET_KEY = str(uuid4())
-
-    # INTERNAL SETTINGS
-    _settings_file = path.join(get_root_path(__name__), 'settings.ini')
-
-    def __init__(self):
-
-        try:
-            self.read()
-        except:
-            self.init()
-
-    def read(self):
-        parser = ConfigParser()
-        parser.read(self._settings_file)
-        items = [item for item in dir(BaseConfig) if item.isupper() and not item.startswith('_')]
-        for item in items:
-            setattr(self, item.upper(), parser.get('DEFAULT', item))
-
-    def init(self):
-        items = [item for item in dir(BaseConfig) if item.isupper() and not item.startswith('_')]
-        parser = ConfigParser()
-        for item in items:
-            parser.set('DEFAULT', item, str(getattr(self, item)))
-        with open(self._settings_file, 'w') as fh:
-            parser.write(fh)
-
-
-class Config(BaseConfig):
-
     MONGO_URI = 'mongodb://localhost:27017/play'
 
     # CELERY / KOMBU SETTINGS
