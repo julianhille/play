@@ -1,4 +1,4 @@
-from fake_filesystem import FakeFileOpen
+from pyfakefs.fake_filesystem import FakeFileOpen
 from play.task import utils
 from unittest.mock import patch
 

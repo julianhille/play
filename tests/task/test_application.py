@@ -1,6 +1,6 @@
 from unittest.mock import call, patch, MagicMock
 
-from fake_filesystem import FakeOsModule, FakeFileOpen
+from pyfakefs.fake_filesystem import FakeOsModule, FakeFileOpen
 from scandir import GenericDirEntry
 
 from play.task import application

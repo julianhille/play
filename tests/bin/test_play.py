@@ -3,7 +3,7 @@ import os
 from pytest import raises
 from unittest.mock import patch, Mock
 
-from fake_filesystem import FakeFileOpen, FakeOsModule
+from pyfakefs.fake_filesystem import FakeFileOpen, FakeOsModule
 
 from play.bin import play as cli
 
@@ -108,7 +108,7 @@ def test_config_folder_already_exists(query_yes_no, file_system):
         args.func(args)
     assert os_mock.path.isfile('/tmp/open/config2.ini') is True
     assert query_yes_no.call_count == 1
-    with open('/tmp/open/config2.ini') as f:
+    with open_mock('/tmp/open/config2.ini') as f:
         content = f.read()
     assert '[DEFAULT]' in content
     assert 'mongo_uri' in content

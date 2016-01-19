@@ -1,6 +1,6 @@
 from celery.backends.mongodb import MongoBackend
 from contextlib import contextmanager
-from fake_filesystem import FakeFilesystem
+from pyfakefs.fake_filesystem import FakeFilesystem
 import pytest
 from unittest.mock import Mock, patch
 from webtest import TestApp
@@ -77,11 +77,11 @@ def file_system():
 
 @pytest.fixture(autouse=True)
 def testapp_static(request):
-    factory = lambda: static_app
     marker = request.node.get_marker('app_factory')
+    factory = None
     if marker:
-        factory = marker.kwargs.get('factory', factory)
-    app = factory()
+        factory = marker.kwargs.get('factory', None)
+    app = static_app if not factory else factory()
     app.debug = True
     return TestApp(app)
 
