@@ -14,7 +14,7 @@ from play.mongo import ensure_indices
 from play.static.wsgi import application as static_app
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def testapp_api(request, humongous):
     ensure_indices(humongous)
 
@@ -40,7 +40,7 @@ def auth(testapp_api, user):
         yield
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def testapp_task(request, humongous):
     ensure_indices(humongous)
     MongoBackend._get_database = Mock(return_value=humongous)
@@ -52,7 +52,7 @@ def testapp_task(request, humongous):
     return factory
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def file_system():
     fs = FakeFilesystem()
     fs.CreateDirectory('/tmp/open/')
@@ -75,7 +75,7 @@ def file_system():
     return fs
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def testapp_static(request):
     marker = request.node.get_marker('app_factory')
     factory = None
