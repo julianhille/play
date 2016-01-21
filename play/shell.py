@@ -6,7 +6,14 @@ import os
 import sys
 from uuid import uuid4
 
+from flask import Config
 import pymongo
+
+from play.default_settings import Config as BaseConfig
+from play.mongo import ensure_indices
+
+default_config_path = '/etc/play/play.ini'
+default_collections = {'albums', 'artists', 'directories', 'playlists', 'tracks', 'users'}
 
 
 def query_yes_no(question, default="yes"):
@@ -77,6 +84,30 @@ def setup(args):
         parser.write(fh)
 
 
+def init_db(args):
+    config = Config(__file__)
+    collections = set(args.collections)
+    try:
+        if not os.path.isfile(args.config):
+            raise Exception('Config file does not exist.')
+        config.from_object(BaseConfig)
+        config.from_pyfile(args.config)
+        mongo = pymongo.MongoClient(config.MONGO_URI)
+        db = mongo.get_default_database()
+        intersection = set(db.collection_names()) & collections
+        if not args.force and intersection and not \
+                query_yes_no('There are collections which will be recreated.'
+                             'All docs will be lost: {}'.format(','.join(intersection)),
+                             default='no'):
+            raise Exception('Cancel recreate (nothing has been deleted).')
+        for collection in collections:
+            db.drop_collection(collection)
+            db.create_collection(collection)
+        ensure_indices(db)
+    except Exception as e:
+        exit(str(e))
+
+
 # create the top-level parser
 parser = argparse.ArgumentParser(description='Play CLI tool',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -84,7 +115,7 @@ subparsers = parser.add_subparsers()
 
 # create the parser for the "setup" command
 parser_setup = subparsers.add_parser('setup')
-parser_setup.add_argument('--config', type=str, default='/etc/play/play.ini',
+parser_setup.add_argument('--config', type=str, default=default_config_path,
                           help='This file should be readable by celery and the uwsgi processes')
 parser_setup.add_argument('--MONGO_URI', type=str, default='mongodb://localhost/play',
                           help='mongodb uri to your server / database')
@@ -92,13 +123,26 @@ parser_setup.add_argument('--SECRET_KEY', type=str, default=str(uuid4()),
                           help='A secret key for the session with a decent length.')
 parser_setup.add_argument('--WTF_CSRF_SECRET_KEY', type=str, default=str(uuid4()),
                           help='A secret key for the CSRF protection with a decent length .')
-
 parser_setup.set_defaults(func=setup)
 
 
-if __name__ == '__main__':  # nocov
+# create the parser for initializing the mongodb the first time
+parser_init_db = subparsers.add_parser('initdb')
+parser_init_db.add_argument('--config', type=str, default=default_config_path,
+                            help='File to read config from.')
+parser_init_db.add_argument('--force', action='store_true', default=False,
+                            help='Force deletion of all collections without furhter asking.')
+parser_init_db.add_argument('--collections', nargs='+', type=str, choices=default_collections,
+                            default=default_collections, help='Okil.')
+parser_init_db.set_defaults(func=init_db)
+
+
+def main():
     args = parser.parse_args()
     if getattr(args, 'func', None):
         args.func(args)
     else:
         parser.print_help()
+
+if __name__ == '__main__':  # nocov
+    main()
