@@ -23,8 +23,8 @@ def test_get_id():
     assert user.get_id() == '12'
 
 
-def test_get(humongous):
-    assert not get_user(humongous, 'Not AT Object Id')
+def test_get(mongodb):
+    assert not get_user(mongodb, 'Not AT Object Id')
 
 
 def test_authenticate():

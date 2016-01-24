@@ -96,7 +96,7 @@ def test_patch_item_user(testapp_api):
     assert '401 UNAUTHORIZED' in str(context.value)
 
 
-def test_post_item_admin(testapp_api, humongous):
+def test_post_item_admin(testapp_api, mongodb):
     password = uuid4().hex
     with auth(testapp_api, user='admin_active'):
         with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
@@ -104,11 +104,11 @@ def test_post_item_admin(testapp_api, humongous):
                 '/users/', {'name': 'SomeName', 'roles': ['admin'],
                             'active': True, 'password': password})
     assert response.status_code == 201
-    user = get_user_by_name(humongous.users, 'SomeName')
+    user = get_user_by_name(mongodb.users, 'SomeName')
     assert user.authenticate(password)
 
 
-def test_put_item_admin(testapp_api, humongous):
+def test_put_item_admin(testapp_api, mongodb):
     password = uuid4().hex
     with auth(testapp_api, user='admin_active'):
         with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
@@ -118,11 +118,11 @@ def test_put_item_admin(testapp_api, humongous):
                 {'name': 'SomeName', 'roles': ['admin'], 'active': True, 'password': password},
                 headers=[('If-Match', response_get.headers['ETag'])])
     assert response.status_code == 200
-    user = get_user_by_name(humongous.users, 'SomeName')
+    user = get_user_by_name(mongodb.users, 'SomeName')
     assert user.authenticate(password)
 
 
-def test_patch_item_admin(testapp_api, humongous):
+def test_patch_item_admin(testapp_api, mongodb):
     password = uuid4().hex
     with auth(testapp_api, user='admin_active'):
         with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
@@ -131,7 +131,7 @@ def test_patch_item_admin(testapp_api, humongous):
                 '/users/ccff1bee2e21e1560a7dd000', {'password': password},
                 headers=[('If-Match', response_get.headers['ETag'])])
     assert response.status_code == 200
-    user = get_user_by_name(humongous.users, response_get.json_body['name'])
+    user = get_user_by_name(mongodb.users, response_get.json_body['name'])
     assert user.authenticate(password)
 
 
