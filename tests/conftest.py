@@ -57,7 +57,7 @@ def file_system():
     fs = FakeFilesystem()
     fs.CreateDirectory('/tmp/open/')
     fs.CreateFile('/tmp/open/git.test', contents='Some_content')
-    fs.CreateFile('/tmp/open/config.ini', contents='[DEFAULT]')
+    fs.CreateFile('/tmp/open/config.cfg', contents='OVERWRITE = \'overwritten\'')
 
     fs.CreateDirectory('/tmp/media/')
     fs.CreateDirectory('/tmp/media/Album')

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
-from configparser import ConfigParser
 from errno import EEXIST
+from getpass import getpass
 import os
 import sys
 from uuid import uuid4
@@ -10,9 +10,10 @@ from flask import Config
 import pymongo
 
 from play.default_settings import Config as BaseConfig
+from play.models.users import hash_password
 from play.mongo import ensure_indices
 
-default_config_path = '/etc/play/play.ini'
+default_config_path = '/etc/play/play.cfg'
 default_collections = {'albums', 'artists', 'directories', 'playlists', 'tracks', 'users'}
 
 
@@ -77,21 +78,25 @@ def setup(args):
         if e.errno != EEXIST:
             exit(str(e))
 
-    parser = ConfigParser()
-    for arg in arguments:
-        parser.set('DEFAULT', arg, str(getattr(args, arg)))
     with open(args.config, 'w') as fh:
-        parser.write(fh)
+        for arg in arguments:
+            fh.write("%s = %s\n" % (arg, repr(str(getattr(args, arg)))))
+
+
+def _get_config(file):
+    if file and not os.path.isfile(file):
+        raise Exception('Config file ({}) does not exist.'.format(file))
+    config = Config(os.getcwd())
+    config.from_object(BaseConfig)
+    if file:
+        config.from_pyfile(file)
+    return config
 
 
 def init_db(args):
-    config = Config(__file__)
     collections = set(args.collections)
     try:
-        if not os.path.isfile(args.config):
-            raise Exception('Config file does not exist.')
-        config.from_object(BaseConfig)
-        config.from_pyfile(args.config)
+        config = _get_config(args.config)
         mongo = pymongo.MongoClient(config.MONGO_URI)
         db = mongo.get_default_database()
         intersection = set(db.collection_names()) & collections
@@ -107,6 +112,39 @@ def init_db(args):
     except Exception as e:
         exit(str(e))
 
+
+def _get_password():
+    while True:
+        password = getpass('Please set password:')
+        confirm = getpass('Please confirm password:')
+        if password != confirm:
+            sys.stdout.write('Passwords did not match. Please retry.')
+        elif password == '':
+            sys.stdout.write('Passwords did not match. Please retry.')
+        else:
+            return password
+
+
+def add_user(args):
+    try:
+        config = _get_config(args.config)
+        mongo = pymongo.MongoClient(config.MONGO_URI)
+        db = mongo.get_default_database()
+        if 'users' not in db.collection_names():
+            exit('Users collection does not exist, please run initdb.')
+        password = args.password
+        if not password:
+            password = _get_password()
+        user = {
+            'name': args.name,
+            'roles': args.roles,
+            'active': args.active,
+            'password': hash_password(password)
+        }
+        print(db.users.insert_one)
+        db.users.insert_one(user)
+    except Exception as e:
+        exit(str(e))
 
 # create the top-level parser
 parser = argparse.ArgumentParser(description='Play CLI tool',
@@ -133,11 +171,26 @@ parser_init_db.add_argument('--config', type=str, default=default_config_path,
 parser_init_db.add_argument('--force', action='store_true', default=False,
                             help='Force deletion of all collections without furhter asking.')
 parser_init_db.add_argument('--collections', nargs='+', type=str, choices=default_collections,
-                            default=default_collections, help='Okil.')
+                            default=default_collections, help='Collections to be created.')
 parser_init_db.set_defaults(func=init_db)
 
 
-def main():
+parser_user = subparsers.add_parser('adduser')
+parser_user.add_argument('name', type=str,
+                         help='Username to be created or updated.')
+parser_user.add_argument('--password', type=str, default=None,
+                         help='Password to set')
+parser_user.add_argument('--active', dest='active', action='store_true')
+parser_user.add_argument('--inactive', dest='active', action='store_false')
+parser_user.set_defaults(active=True)
+parser_user.add_argument('--roles', nargs='*', type=str,
+                         default=['admin'], help='Known roles are admin, user')
+parser_user.add_argument('--config', type=str, default=default_config_path,
+                         help='File to read config from.')
+parser_user.set_defaults(func=add_user)
+
+
+def main():  # nocov
     args = parser.parse_args()
     if getattr(args, 'func', None):
         args.func(args)
