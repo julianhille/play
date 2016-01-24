@@ -15,8 +15,8 @@ from play.static.wsgi import application as static_app
 
 
 @pytest.fixture()
-def testapp_api(request, humongous):
-    ensure_indices(humongous)
+def testapp_api(request, mongodb):
+    ensure_indices(mongodb)
 
     factory = api
     marker = request.node.get_marker('app_factory')
@@ -24,7 +24,7 @@ def testapp_api(request, humongous):
         factory = marker.kwargs.get('factory', api)
     with patch('eve.io.mongo.mongo.Mongo.pymongo'):
         app = factory()
-    app.data.pymongo = Mock(return_value=Mock(db=humongous))
+    app.data.pymongo = Mock(return_value=Mock(db=mongodb))
     app.data.mongo_prefix = None
     app.debug = True
     return TestApp(app)
@@ -41,9 +41,9 @@ def auth(testapp_api, user):
 
 
 @pytest.fixture()
-def testapp_task(request, humongous):
-    ensure_indices(humongous)
-    MongoBackend._get_database = Mock(return_value=humongous)
+def testapp_task(request, mongodb):
+    ensure_indices(mongodb)
+    MongoBackend._get_database = Mock(return_value=mongodb)
     factory = task_app
     marker = request.node.get_marker('app_factory')
     if marker:
@@ -87,9 +87,9 @@ def testapp_static(request):
 
 
 def is_mongomock():
-    if('mongomock' == pytest.config.getoption('humongous_engine')):
+    if('mongomock' == pytest.config.getoption('mongodb_engine')):
         return True
-    elif pytest.config.getoption('humongous_engine') is None:
-        return 'mongomock' == pytest.config.getini('humongous_engine')
+    elif pytest.config.getoption('mongodb_engine') is None:
+        return 'mongomock' == pytest.config.getini('mongodb_engine')
     else:
         return False
