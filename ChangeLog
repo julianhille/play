@@ -1,6 +1,16 @@
 CHANGES
 =======
 
+* Fixes changes introduced due to new pyfakefs version
+* Adds first installation command
+* Adds PUT,POST,PATCH with admin rights
+* Makes use of the new test if mongomock is used
+* Adds a test if humongous runs on mongomock and fixes mocking of the database for new eve version
+* Fixes a validator issue, which requires at least a dict as schema
+* upgrades eve
+* Changes deprecated / old travis builds to new platform and removes sudo usage
+* Config with default values
+* Removes insecure pickle and now use bson for celery serialization
 * fixes eslint issue
 * Fixes a search parameter issue and now uses parameter instead of a part in the path for search term
 * Changes anonymouse functions to named functions for better debugging

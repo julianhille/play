@@ -1,5 +1,5 @@
 from bson import ObjectId
-from fake_filesystem import FakeOsModule
+from pyfakefs.fake_filesystem import FakeOsModule
 from pytest import raises
 from unittest.mock import Mock, patch
 from webtest import AppError

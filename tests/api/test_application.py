@@ -1,4 +1,4 @@
-from fake_filesystem import FakeOsModule, FakeFileOpen
+from pyfakefs.fake_filesystem import FakeOsModule, FakeFileOpen
 from play.api import application
 from unittest.mock import Mock, patch
 

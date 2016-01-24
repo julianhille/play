@@ -1,6 +1,6 @@
 from celery.backends.mongodb import MongoBackend
 from contextlib import contextmanager
-from fake_filesystem import FakeFilesystem
+from pyfakefs.fake_filesystem import FakeFilesystem
 import pytest
 from unittest.mock import Mock, patch
 from webtest import TestApp
@@ -14,7 +14,7 @@ from play.mongo import ensure_indices
 from play.static.wsgi import application as static_app
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def testapp_api(request, humongous):
     ensure_indices(humongous)
 
@@ -40,7 +40,7 @@ def auth(testapp_api, user):
         yield
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def testapp_task(request, humongous):
     ensure_indices(humongous)
     MongoBackend._get_database = Mock(return_value=humongous)
@@ -52,11 +52,12 @@ def testapp_task(request, humongous):
     return factory
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def file_system():
     fs = FakeFilesystem()
     fs.CreateDirectory('/tmp/open/')
     fs.CreateFile('/tmp/open/git.test', contents='Some_content')
+    fs.CreateFile('/tmp/open/config.cfg', contents='OVERWRITE = \'overwritten\'')
 
     fs.CreateDirectory('/tmp/media/')
     fs.CreateDirectory('/tmp/media/Album')
@@ -74,13 +75,13 @@ def file_system():
     return fs
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def testapp_static(request):
-    factory = lambda: static_app
     marker = request.node.get_marker('app_factory')
+    factory = None
     if marker:
-        factory = marker.kwargs.get('factory', factory)
-    app = factory()
+        factory = marker.kwargs.get('factory', None)
+    app = static_app if not factory else factory()
     app.debug = True
     return TestApp(app)
 
