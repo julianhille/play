@@ -184,7 +184,7 @@ def test_initdb_collections_exists_no_force(pymongo_mock, query_yes_no, os_mock,
     db_mock = pymongo_mock.MongoClient().get_default_database()
     db_mock.collection_names.return_value = shell.default_collections
     query_yes_no.return_value = False
-    config_mock.return_value = Mock(MONGO_URI='mongo_uri')
+    config_mock.return_value = {'MONGO_URI': 'mongo_uri'}
     with raises(SystemExit) as exits:
         args = shell.parser.parse_args('initdb --config=/tmp/open/config.cfg'.split())
         args.func(args)
@@ -202,7 +202,7 @@ def test_initdb_collections_exists_no_force_answer_true(ensure_indices_mock, pym
     db_mock = pymongo_mock.MongoClient().get_default_database()
     db_mock.collection_names.return_value = shell.default_collections
     query_yes_no.return_value = True
-    config_mock.return_value = Mock(MONGO_URI='mongo_uri')
+    config_mock.return_value = {'MONGO_URI': 'mongo_uri'}
     args = shell.parser.parse_args('initdb --config=/tmp/open/config.cfg'.split())
     args.func(args)
     db_mock.drop_collection.assert_has_calls(
@@ -221,7 +221,7 @@ def test_initdb_collections_exists_force_true(ensure_indices_mock, pymongo_mock,
                                               os_mock, config_mock, file_system):
     db_mock = pymongo_mock.MongoClient().get_default_database()
     db_mock.collection_names.return_value = shell.default_collections
-    config_mock.return_value = Mock(MONGO_URI='mongo_uri')
+    config_mock.return_value = {'MONGO_URI': 'mongo_uri'}
     args = shell.parser.parse_args('initdb --force --config=/tmp/open/config.cfg'.split())
     args.func(args)
     assert query_yes_no.call_count == 0
@@ -241,7 +241,7 @@ def test_initdb_collections_set(ensure_indices_mock, pymongo_mock, query_yes_no,
                                 config_mock, file_system):
     db_mock = pymongo_mock.MongoClient().get_default_database()
     db_mock.collection_names.return_value = []
-    config_mock.return_value = Mock(MONGO_URI='mongo_uri')
+    config_mock.return_value = {'MONGO_URI': 'mongo_uri'}
     first_item = shell.default_collections.copy().pop()
     args = shell.parser.parse_args(
         ('initdb --collections {}  --config=/tmp/open/config.cfg'.format(first_item)).split())
@@ -275,7 +275,7 @@ def test_add_user_exceptions_catched(config_mock):
 @patch('play.shell.pymongo')
 @patch('play.shell._get_config')
 def test_add_user_no_user_collection(config_mock, pymongo_mock):
-    config_mock.return_value = Mock(MONGO_URI='mongodb_connection_string')
+    config_mock.return_value = {'MONGO_URI': 'mongodb_connection_string'}
     get_default_db = Mock(return_value=Mock(collection_names=Mock(return_value=['not_users'])))
     pymongo_mock.MongoClient.return_value = Mock(get_default_database=get_default_db)
     with raises(SystemExit) as exits:
@@ -293,7 +293,7 @@ def test_add_user_no_user_collection(config_mock, pymongo_mock):
 @patch('play.shell.pymongo')
 @patch('play.shell._get_config')
 def test_add_user_no_password_set(config_mock, pymongo_mock, password_mock, hash_password):
-    config_mock.return_value = Mock(MONGO_URI='mongodb_connection_string')
+    config_mock.return_value = {'MONGO_URI': 'mongodb_connection_string'}
     get_default_db = Mock(return_value=Mock(collection_names=Mock(return_value=['users'])))
     pymongo_mock.MongoClient.return_value = Mock(get_default_database=get_default_db)
     password_mock.return_value = 'password'
@@ -313,7 +313,7 @@ def test_add_user_no_password_set(config_mock, pymongo_mock, password_mock, hash
 @patch('play.shell.pymongo')
 @patch('play.shell._get_config')
 def test_add_user_password_set(config_mock, pymongo_mock, password_mock, hash_password):
-    config_mock.return_value = Mock(MONGO_URI='mongodb_connection_string')
+    config_mock.return_value = {'MONGO_URI': 'mongodb_connection_string'}
     get_default_db = Mock(return_value=Mock(collection_names=Mock(return_value=['users'])))
     pymongo_mock.MongoClient.return_value = Mock(get_default_database=get_default_db)
     password_mock.return_value = 'password'
@@ -342,7 +342,7 @@ def test_add_user_password_set(config_mock, pymongo_mock, password_mock, hash_pa
 def test_add_user_test_set_values(config_mock, pymongo_mock, password_mock, hash_password,
                                   parameter):
     argument, (test_key, test_value) = parameter
-    config_mock.return_value = Mock(MONGO_URI='mongodb_connection_string')
+    config_mock.return_value = {'MONGO_URI': 'mongodb_connection_string'}
     get_default_db = Mock(return_value=Mock(collection_names=Mock(return_value=['users'])))
     pymongo_mock.MongoClient.return_value = Mock(get_default_database=get_default_db)
     password_mock.return_value = 'password'

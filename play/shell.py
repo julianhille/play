@@ -97,7 +97,7 @@ def init_db(args):
     collections = set(args.collections)
     try:
         config = _get_config(args.config)
-        mongo = pymongo.MongoClient(config.MONGO_URI)
+        mongo = pymongo.MongoClient(config['MONGO_URI'])
         db = mongo.get_default_database()
         intersection = set(db.collection_names()) & collections
         if not args.force and intersection and not \
@@ -128,7 +128,7 @@ def _get_password():
 def add_user(args):
     try:
         config = _get_config(args.config)
-        mongo = pymongo.MongoClient(config.MONGO_URI)
+        mongo = pymongo.MongoClient(config['MONGO_URI'])
         db = mongo.get_default_database()
         if 'users' not in db.collection_names():
             exit('Users collection does not exist, please run initdb.')
@@ -141,7 +141,6 @@ def add_user(args):
             'active': args.active,
             'password': hash_password(password)
         }
-        print(db.users.insert_one)
         db.users.insert_one(user)
     except Exception as e:
         exit(str(e))
