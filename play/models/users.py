@@ -63,6 +63,6 @@ class LoginUser(UserMixin):
 
 
 class UserLoginForm(Form):
-    username = fields.StringField('Login name', [validators.Length(min=5, max=255)])
-    password = fields.PasswordField('Password', [validators.Length(min=5, max=255)])
+    username = fields.StringField('Login name', [validators.Length(min=1, max=255)])
+    password = fields.PasswordField('Password', [validators.Length(min=1, max=255)])
     remember = fields.BooleanField('Remember', false_values=[None, 0, '0', False], default=False)
