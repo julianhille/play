@@ -9,7 +9,7 @@ from uuid import uuid4
 from flask import Config
 import pymongo
 
-from play.default_settings import Config as BaseConfig
+from play.config import DefaultConfig
 from play.models.users import hash_password
 from play.mongo import ensure_indices
 
@@ -87,7 +87,7 @@ def _get_config(file):
     if file and not os.path.isfile(file):
         raise Exception('Config file ({}) does not exist.'.format(file))
     config = Config(os.getcwd())
-    config.from_object(BaseConfig)
+    config.from_object(DefaultConfig)
     if file:
         config.from_pyfile(file)
     return config

@@ -4,16 +4,21 @@ import re
 
 from celery import Celery, current_app
 from celery.utils.log import get_task_logger
+from bson import BSON
+from kombu.serialization import register
 from mutagen import File
 from scandir import scandir
 
 from .utils import hash_file
+from play.config import config
 
 
 def _create_app():
     app = Celery(__name__)
-    app.config_from_object('play.default_settings.config')
-    app.config_from_envvar('PLAY_CONFIGURATION', silent=True)
+    app.config_from_object(config)
+    register('bson', BSON.encode, BSON.decode,
+             content_type='application/bson',
+             content_encoding='utf-8')
     return app
 
 

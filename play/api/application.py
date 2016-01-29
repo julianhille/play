@@ -4,12 +4,12 @@ import re
 
 from eve import Eve
 from eve.io import mongo
-from eve.utils import config
-from flask import Config, request, send_file, Response
-from flask.helpers import get_root_path
+from eve.utils import config as eve_config
+from flask import  Response, request, send_file
 from flask.ext.login import current_user
 
 from play.api.auth import SessionAuth
+from play.config import config
 
 
 class Validator(mongo.Validator):
@@ -31,7 +31,7 @@ class Mongo(mongo.Mongo):
             resource, query=query, client_projection=client_projection, client_sort=client_sort)
         if fields:
             excludes = 0 in fields.values()
-            for field_name, schema_field in config.DOMAIN[resource]['schema'].items():
+            for field_name, schema_field in eve_config.DOMAIN[resource]['schema'].items():
                 if 'roles' in schema_field and not current_user.has_role(schema_field['roles']):
                     if excludes:
                         fields[field_name] = 0
@@ -46,9 +46,7 @@ class Mongo(mongo.Mongo):
 class Application(object):
 
     def __init__(self, settings=None):
-        self.settings = Config(get_root_path(__name__))
-        self.settings.from_object('play.default_settings.config')
-        self.settings.from_envvar('PLAY_CONFIGURATION', silent=True)
+        self.settings = config
         if 'DOMAIN' not in self.settings:
             self.settings['DOMAIN'] = {}
         self._blueprints = []

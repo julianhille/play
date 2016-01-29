@@ -385,14 +385,14 @@ def test_get_password_empty_password(sys_mock, getpass_mock):
     assert getpass_mock.call_count == 4
 
 
-@patch('play.shell.BaseConfig')
+@patch('play.shell.DefaultConfig')
 def test_get_config_without_file(config_mock):
     config_mock.SOME_CONFIG_VALUE = 'value'
     config = shell._get_config(None)
     assert config['SOME_CONFIG_VALUE'] == 'value'
 
 
-@patch('play.shell.BaseConfig')
+@patch('play.shell.DefaultConfig')
 def test_get_config_with_file_overwrite(config_mock, file_system):
     config_mock.SOME_CONFIG_VALUE = 'value'
     config_mock.OVERWRITE = 'value'
