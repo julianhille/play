@@ -5,7 +5,7 @@ import re
 from eve import Eve
 from eve.io import mongo
 from eve.utils import config as eve_config
-from flask import  Response, request, send_file
+from flask import Response, request, send_file
 from flask.ext.login import current_user
 
 from play.api.auth import SessionAuth
