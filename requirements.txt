@@ -3,7 +3,6 @@ xkcdpass
 bcrypt
 eve==0.6.1
 pyyaml
-scandir
 celery
 flask-login
 flask-pymongo
