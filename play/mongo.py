@@ -18,6 +18,7 @@ def ensure_indices(db):  # nocov
          ('search.file', pymongo.TEXT)],
         background=True)
     db.tracks.create_index([('hash', pymongo.DESCENDING)], background=True)
+    db.tracks.create_index([('path', pymongo.DESCENDING)], background=True, unique=True)
 
     # directories
     db.directories.create_index([('path', pymongo.ASCENDING)], background=True, unique=True)
