@@ -229,12 +229,14 @@ def test_put_rescan_not_found_admin(testapp_api):
     assert '404 NOT FOUND' in str(context.value)
 
 
-@patch('play.api.tracks.scan_audio')
-def test_put_rescan_admin(scan_audio, testapp_api):
+@patch('play.api.tracks.audio_scan')
+def test_put_rescan_admin(audio_scan, testapp_api):
 
     with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)):
         with auth(testapp_api, user='admin_active'):
             response = testapp_api.put_json(
                 '/tracks/rescan', {'_id': 'adf19b92e21e1560a7dd0000'})
-    scan_audio.delay.assert_called_once_with('/var/media/some_file.mp3')
     assert response.status_code == 204
+    audio_scan.apply_async.assert_called_once_with(
+        arg=[ObjectId('adf19b92e21e1560a7dd0000')], exchange='play',
+        routing_key='play.directory.ddff19b92e21e1560a7dd000')
