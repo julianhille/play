@@ -13,7 +13,6 @@ from play.models.users import get_user_by_name
 from play.mongo import ensure_indices
 from play.static.wsgi import application as static_app
 
-
 @pytest.fixture()
 def testapp_api(request, mongodb):
     ensure_indices(mongodb)
@@ -86,10 +85,6 @@ def testapp_static(request):
     return TestApp(app)
 
 
-def is_mongomock():
-    if('mongomock' == pytest.config.getoption('mongodb_engine')):
-        return True
-    elif pytest.config.getoption('mongodb_engine') is None:
-        return 'mongomock' == pytest.config.getini('mongodb_engine')
-    else:
-        return False
+def mongo_engine(pytestconfig):
+    return pytest.config.getoption('mongodb_engine') or pytest.config.getini('mongodb_engine')
+

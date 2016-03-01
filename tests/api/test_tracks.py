@@ -3,7 +3,7 @@ from pytest import mark, raises
 from unittest.mock import Mock, patch
 from webtest import AppError
 
-from tests.conftest import auth, is_mongomock
+from tests.conftest import auth, mongo_engine
 
 
 def test_get_resource_no_auth(testapp_api):
@@ -191,7 +191,7 @@ def test_get_stream_id_found_invalid_file(testapp_api):
     assert '500 INTERNAL SERVER ERROR' in str(context.value)
 
 
-@mark.skipif(is_mongomock(), reason="mongomock does not support $text")
+@mark.skipif(mongo_engine() == 'mongomock', reason="mongomock does not support $text")
 def test_fulltext_search(testapp_api):
     with auth(testapp_api, user='user_active'):
         response = testapp_api.get('/tracks/?where={"$text": {"$search":"file"}}')
