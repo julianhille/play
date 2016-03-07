@@ -4,8 +4,6 @@ from pymongo.uri_parser import parse_uri
 from flask import Config
 from flask.helpers import get_root_path
 
-from kombu import Exchange, Queue
-
 
 class DefaultConfig(object):
     # This should be configured
@@ -22,17 +20,8 @@ class DefaultConfig(object):
     CELERY_RESULT_SERIALIZER = 'bson'
     CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
     CELERY_DEFAULT_EXCHANGE = 'play'
-    CELERY_DEFAULT_ROUTING_KEY = 'play.directory.*'
-    CELERY_DEFAULT_QUEUE = 'play.directory'
-
-    CELERY_ROUTES = {
-        'play.task.application.directory_scan':
-            {'queue': 'play.directory', 'exchange': 'play', 'routing_key': 'play.directory.*'},
-        'play.task.application.audio_scan':
-            {'queue': 'play.directory', 'exchange': 'play', 'routing_key': 'play.directory.*'}}
-    CELERY_QUEUES = (Queue('play.directory',
-                           routing_key='play.directory.*',
-                           exchange=Exchange('play', type='topic')),)
+    CELERY_DEFAULT_ROUTING_KEY = 'play'
+    CELERY_DEFAULT_QUEUE = 'play'
 
     # WTF SETTINGS
     WTF_CSRF_HEADERS = ['X-CSRFToken', 'X-CSRF-Token', 'X-XSRFToken', 'X-XSRF-Token']

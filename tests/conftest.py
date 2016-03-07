@@ -67,6 +67,7 @@ def file_system():
     fs.CreateFile('/tmp/media/Album/John Bovi/album.jpg', contents='Some_content')
     fs.CreateFile('/tmp/media/Album/John Bovi/anything.txt', contents='Some_content')
     fs.CreateDirectory('/tmp/media/Album/John Bovi/SubDir')
+    fs.CreateFile('/tmp/media/Album/John Bovi/SubDir/01.mp3', contents='Some_content')
 
     fs.CreateDirectory('/tmp/media/Album/Allica Mett')
     fs.CreateFile('/tmp/media/Album/Allica Mett01.mp3', contents='Some_content')

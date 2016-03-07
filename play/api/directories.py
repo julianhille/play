@@ -34,6 +34,11 @@ SCHEMA = {
     }
 }
 
+'''
+    @TODO (jhille):
+    - on directory delete we need to cancel all updates and delete/deactivate all tracks
+'''
+
 
 blueprint = Blueprint('directories', __name__, SCHEMA, url_prefix='/directories')
 
@@ -41,8 +46,7 @@ blueprint = Blueprint('directories', __name__, SCHEMA, url_prefix='/directories'
 @blueprint.hook('on_inserted')
 def ensure_scan_on_insert(documents):
     for document in documents:
-        directory_scan.apply_async(
-            args=[document['_id']], queue='play.directory.{}'.format(document['_id']))
+        directory_scan.apply_async(args=[document['_id']], queue='play')
 
 
 @blueprint.hook('on_insert')
@@ -72,5 +76,5 @@ def trigger_rescan():
     directory = current_app.data.driver.db['directories'].find_one({'_id': id_}, {'_id': 1})
     if not directory:
         abort(404)
-    directory_scan.apply_async(args=[id_], queue='play.directory.{}'.format(id_))
+    directory_scan.apply_async(args=[id_], queue='play')
     return '', 204

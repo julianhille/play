@@ -90,8 +90,7 @@ def trigger_rescan():
     track = current_app.data.driver.db['tracks'].find_one({'_id': id_}, {'directory': 1})
     if not track:
         abort(404)
-    audio_scan.apply_async(
-        arg=[id_], exchange='play', routing_key='play.directory.{}'.format(track['directory']))
+    audio_scan.apply_async(arg=[id_], queue='play')
     return '', 204
 
 

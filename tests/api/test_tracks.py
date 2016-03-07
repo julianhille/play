@@ -238,5 +238,4 @@ def test_put_rescan_admin(audio_scan, testapp_api):
                 '/tracks/rescan', {'_id': 'adf19b92e21e1560a7dd0000'})
     assert response.status_code == 204
     audio_scan.apply_async.assert_called_once_with(
-        arg=[ObjectId('adf19b92e21e1560a7dd0000')], exchange='play',
-        routing_key='play.directory.ddff19b92e21e1560a7dd000')
+        arg=[ObjectId('adf19b92e21e1560a7dd0000')], queue='play')
