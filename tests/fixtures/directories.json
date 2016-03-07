@@ -3,40 +3,6 @@
     "_id": {"$oid": "ddff19b92e21e1560a7dd000"},
     "path": "/var/media/path",
     "name": "path",
-    "parent": null,
-    "parents": [],
-    "scanned": {"$date": "2015-05-10T00:00:00.000"},
-    "_created_date": {"$date": "2015-05-01T00:00:00.000"},
-    "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
-  },
-  {
-    "_id": {"$oid": "ddff19b92e21e1560a7dd001"},
-    "path": "/var/media/path/subfolder",
-    "name": "subfolder",
-    "parent": {"$oid": "ddff19b92e21e1560a7dd000"},
-    "parents": [{"$oid": "ddff19b92e21e1560a7dd000"}],
-    "scanned": {"$date": "2015-05-10T00:00:00.000"},
-    "_created_date": {"$date": "2015-05-01T00:00:00.000"},
-    "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
-  },
-  {
-    "_id": {"$oid": "ddff19b92e21e1560a7dd002"},
-    "path": "/var/media/path/subfolder/subfolder",
-    "name": "subfolder subfolder",
-    "parent": {"$oid": "ddff19b92e21e1560a7dd001"},
-    "parents": [
-      {"$oid": "ddff19b92e21e1560a7dd000"},
-      {"$oid": "ddff19b92e21e1560a7dd001"}],
-    "scanned": {"$date": "2015-05-10T00:00:00.000"},
-    "_created_date": {"$date": "2015-05-01T00:00:00.000"},
-    "_updated_date": {"$date": "2015-05-01T00:00:00.000"}
-  },
-  {
-    "_id": {"$oid": "ddff19b92e21e1560a7dd003"},
-    "path": "/var/media/path/subfolder1",
-    "name": "subfolder1",
-    "parent": {"$oid": "ddff19b92e21e1560a7dd000"},
-    "parents": [{"$oid": "ddff19b92e21e1560a7dd000"}],
     "scanned": {"$date": "2015-05-10T00:00:00.000"},
     "_created_date": {"$date": "2015-05-01T00:00:00.000"},
     "_updated_date": {"$date": "2015-05-01T00:00:00.000"}

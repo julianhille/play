@@ -6,7 +6,7 @@ from flask import abort, current_app, request
 
 from play.api.blueprint import Blueprint
 from play.api.application import send_file_partial
-from play.task.application import scan_audio
+from play.task.application import audio_scan
 from play.utils import delete_track_post_process
 
 SCHEMA = {
@@ -38,13 +38,6 @@ SCHEMA = {
         },
         'directory': {
             'type': 'objectid',
-            'readonly': True
-        },
-        'parent_directories': {
-            'type': 'list',
-            'schema': {
-                'type': 'objectid'
-            },
             'readonly': True
         },
         'active': {
@@ -94,10 +87,10 @@ def trigger_rescan():
     except InvalidId:
         abort(422, 'invalid _id')
 
-    track = current_app.data.driver.db['tracks'].find_one({'_id': id_}, {'path': 1})
+    track = current_app.data.driver.db['tracks'].find_one({'_id': id_}, {'directory': 1})
     if not track:
         abort(404)
-    scan_audio.delay(track['path'])
+    audio_scan.apply_async(arg=[id_], queue='play')
     return '', 204
 
 

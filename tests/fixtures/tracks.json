@@ -11,7 +11,6 @@
         "name": "some_file.mp3",
         "search": {"file": "some file"},
         "directory": {"$oid": "ddff19b92e21e1560a7dd000"},
-        "parent_directories": [{"$oid": "ddff19b92e21e1560a7dd000"}],
         "path": "/var/media/some_file.mp3",
         "hash": "somesha1",
         "scanned": {"$date": "2015-05-09T00:00:00.000"},
@@ -30,10 +29,6 @@
         "name": "ano thing",
         "search": {"file": "ano thing"},
         "directory": {"$oid": "ddff19b92e21e1560a7dd000"},
-        "parent_directories": [
-              {"$oid": "ddff19b92e21e1560a7dd000"},
-              {"$oid": "ddff19b92e21e1560a7dd001"},
-              {"$oid": "ddff19b92e21e1560a7dd002"}],
         "path": "/var/media/music.mp3",
         "hash": "somesha2",
         "scanned": {"$date": "2015-05-09T00:00:00.000"},

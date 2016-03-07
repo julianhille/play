@@ -67,6 +67,7 @@ def file_system():
     fs.CreateFile('/tmp/media/Album/John Bovi/album.jpg', contents='Some_content')
     fs.CreateFile('/tmp/media/Album/John Bovi/anything.txt', contents='Some_content')
     fs.CreateDirectory('/tmp/media/Album/John Bovi/SubDir')
+    fs.CreateFile('/tmp/media/Album/John Bovi/SubDir/01.mp3', contents='Some_content')
 
     fs.CreateDirectory('/tmp/media/Album/Allica Mett')
     fs.CreateFile('/tmp/media/Album/Allica Mett01.mp3', contents='Some_content')
@@ -86,10 +87,5 @@ def testapp_static(request):
     return TestApp(app)
 
 
-def is_mongomock():
-    if('mongomock' == pytest.config.getoption('mongodb_engine')):
-        return True
-    elif pytest.config.getoption('mongodb_engine') is None:
-        return 'mongomock' == pytest.config.getini('mongodb_engine')
-    else:
-        return False
+def mongo_engine():
+    return pytest.config.getoption('mongodb_engine') or pytest.config.getini('mongodb_engine')

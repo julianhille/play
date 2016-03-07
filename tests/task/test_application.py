@@ -1,112 +1,117 @@
-from unittest.mock import call, patch, MagicMock
+from unittest.mock import MagicMock, patch
+from bson import ObjectId
 
-from pyfakefs.fake_filesystem import FakeOsModule, FakeFileOpen
-from scandir import GenericDirEntry
-
+from pyfakefs.fake_filesystem import FakeFileOpen, FakeOsModule
 from play.task import application
 
 
-def test_scan_dir(testapp_task, file_system):
-    os = FakeOsModule(file_system)
+def walk_fix(func):
+    #  this is only needed as long as pyfakefs does not support followlinks
+    def inner(top, topdown=True, onerror=None, followlinks=False):
+        return func(top, topdown=topdown, onerror=onerror)
+    return inner
 
-    def scandir(path):
-        for name in os.listdir(path):
-            yield GenericDirEntry(path, name)
+
+def test_walk_dir(testapp_task, file_system):
+    os_mock = FakeOsModule(file_system)
+    os_mock.walk = walk_fix(os_mock.walk)
     testapp_task.backend.database.directories.remove({})
-    testapp_task.backend.database.directories.insert(
+    directory_id = testapp_task.backend.database.directories.insert(
         {'path': '/tmp/media/Album/John Bovi', 'parents': []})
-    with patch('scandir.os', os), patch('scandir.listdir', os.listdir), \
-            patch('scandir.stat', os.stat), patch('scandir.lstat', os.lstat),\
-            patch('scandir.strerror', os.strerror), patch('scandir.islink', os.path.islink),\
-            patch('scandir.join', os.path.join), patch('play.task.application.os', os), \
-            patch('play.task.application.scandir', scandir):
-        with patch('play.task.application.scan_audio.delay') as scan,\
-                patch('celery.app.task.Task.delay') as delay:
-            application.directory_scan('/tmp/media/Album/John Bovi/')
-        delay.assert_called_once_with('/tmp/media/Album/John Bovi/SubDir')
-        scan.assert_has_calls([
-            call('/tmp/media/Album/John Bovi/01.mp3'),
-            call('/tmp/media/Album/John Bovi/02-music-in-the-air.mp3')])
-        assert testapp_task.backend.database.directories.find().count() == 2
+    with patch('play.task.application.os', os_mock):
+        with patch('play.task.application.audio_scan.apply_async') as scan:
+            application.directory_scan(directory_id)
+        assert scan.call_count == 3
+        for call_arg in scan.call_args_list:
+            assert isinstance(call_arg[1]['args'][0], ObjectId)
+            assert call_arg[1]['queue'] == 'play'
 
 
 def test_scan_not_existent_dir(testapp_task, file_system):
-    os = FakeOsModule(file_system)
-
-    def scandir(path):
-        nonlocal os
-        for name in os.listdir(path):
-            yield GenericDirEntry(path, name)
-
-    testapp_task.backend.database.directories.insert(
+    id_ = testapp_task.backend.database.directories.insert(
         {'path': '/tmp/media/Album/Unknown', 'parents': []})
-    with patch('scandir.os', os), patch('scandir.listdir', os.listdir),\
-            patch('scandir.stat', os.stat), patch('scandir.lstat', os.lstat),\
-            patch('scandir.strerror', os.strerror), patch('scandir.islink', os.path.islink),\
-            patch('scandir.join', os.path.join), patch('play.task.application.scandir', scandir):
-        with patch('play.task.application.scan_audio.delay') as scan, \
-                patch('celery.app.task.Task.delay') as directory_delay:
-            application.directory_scan('/tmp/media/Album/Unknown')
-            assert directory_delay.call_count == 0
+    os_mock = FakeOsModule(file_system)
+    os_mock.walk = walk_fix(os_mock.walk)
+    with patch('play.task.application.os', os_mock):
+        with patch('play.task.application.audio_scan.apply_async') as scan:
+            application.directory_scan(id_)
             assert scan.call_count == 0
             item = testapp_task.backend.database.directories.find_one(
-                {'path': '/tmp/media/Album/Unknown'})
-            assert item['status'] is False
+                {'_id': id_})
+            assert item['active'] is False
 
 
-def test_scan_dir_missing_db_entry(testapp_task, file_system):
+@patch('play.task.application.lock')
+def test_scan_dir_missing_db_entry(lock, testapp_task):
     testapp_task.backend.database.directories.remove({})
     testapp_task.backend.database.tracks.remove({})
-    with patch('play.task.application.scandir') as scan, \
-            patch('celery.app.task.Task.delay') as delay:
-        application.directory_scan('/tmp/media/Album/John Bovi/')
-    assert delay.call_count == 0
-    assert scan.call_count == 0
+    application.directory_scan(ObjectId())
     assert testapp_task.backend.database.directories.find().count() == 0
     assert testapp_task.backend.database.tracks.find().count() == 0
+    assert lock.call_count == 0
 
 
 @patch('play.task.application.add_audio_information')
 def test_scan_audio(audio_information, testapp_task, file_system):
-
-    os = FakeOsModule(file_system)
-    open_ = FakeFileOpen(file_system)
+    os_mock = FakeOsModule(file_system)
+    os_mock.walk = walk_fix(os_mock.walk)
+    open_mock = FakeFileOpen(file_system)
     testapp_task.backend.database.directories.remove({})
     testapp_task.backend.database.tracks.remove({})
-    testapp_task.backend.database.directories.insert(
+    dir_id = testapp_task.backend.database.directories.insert(
         {'parents': [], 'path': '/tmp/media/Album/John Bovi'})
-    with patch('play.task.application.os', os),\
-            patch('play.task.utils.open', open_, create=True):
-        application.scan_audio('/tmp/media/Album/John Bovi/01.mp3')
+    id_ = testapp_task.backend.database.tracks.insert(
+        {'directory': dir_id, 'path': '/tmp/media/Album/John Bovi/01.mp3'})
+    with patch('play.task.application.os', os_mock),\
+            patch('play.task.utils.open', open_mock, create=True):
+        application.audio_scan(id_)
     assert testapp_task.backend.database.directories.find().count() == 1
     assert testapp_task.backend.database.tracks.find().count() == 1
     assert audio_information.call_count == 1
 
 
-def test_scan_audio_missing_directory(testapp_task, file_system):
-    os = FakeOsModule(file_system)
-    open_ = FakeFileOpen(file_system)
-    testapp_task.backend.database.directories.remove({})
+@patch('play.task.application.lock')
+def test_scan_audio_missing_db_entry(lock, testapp_task, file_system):
     testapp_task.backend.database.tracks.remove({})
-    with patch('play.task.application.os', os),\
-            patch('play.task.utils.open', open_, create=True):
-        application.scan_audio('/tmp/media/Album/John Bovi/01.mp3')
-    assert testapp_task.backend.database.directories.find().count() == 0
+    application.directory_scan(ObjectId())
+    assert testapp_task.backend.database.directories.find().count() == 1
     assert testapp_task.backend.database.tracks.find().count() == 0
+    assert lock.call_count == 0
 
 
 def test_scan_audio_missing_file(testapp_task, file_system):
     testapp_task.backend.database.directories.remove({})
     testapp_task.backend.database.tracks.remove({})
-    testapp_task.backend.database.directories.insert(
+
+    os_mock = FakeOsModule(file_system)
+    os_mock.walk = walk_fix(os_mock.walk)
+    open_mock = MagicMock()
+    dir_id = testapp_task.backend.database.directories.insert(
         {'parents': [], 'path': '/tmp/media/Album/John Bovi'})
-    os = FakeOsModule(file_system)
-    open_ = FakeFileOpen(file_system)
-    with patch('play.task.application.os', os),\
-            patch('play.task.utils.open', open_, create=True):
-        application.scan_audio('/tmp/media/Album/John Bovi/01111.mp3')
+    id_ = testapp_task.backend.database.tracks.insert(
+        {'directory': dir_id, 'path': '/tmp/media/Album/John Bovi/NOTEXISTS.mp3'})
+    with patch('play.task.application.os', os_mock),\
+            patch('play.task.application.open', open_mock, create=True):
+        application.audio_scan(id_)
     assert testapp_task.backend.database.directories.find().count() == 1
-    assert testapp_task.backend.database.tracks.find().count() == 0
+    assert testapp_task.backend.database.tracks.find_one({'_id': id_})['active'] is False
+    assert open_mock.call_count == 0
+
+
+def test_scan_audio_missing_directory(testapp_task, file_system):
+    os_mock = FakeOsModule(file_system)
+    os_mock.walk = walk_fix(os_mock.walk)
+    open_mock = FakeFileOpen(file_system)
+    testapp_task.backend.database.directories.remove({})
+    testapp_task.backend.database.tracks.remove({})
+
+    id_ = testapp_task.backend.database.tracks.insert(
+        {'directory': ObjectId(), 'path': '/tmp/media/Album/John Bovi/01.mp3'})
+    with patch('play.task.application.os', os_mock),\
+            patch('play.task.utils.open', open_mock, create=True):
+        application.audio_scan(id_)
+    assert testapp_task.backend.database.directories.find().count() == 0
+    assert testapp_task.backend.database.tracks.find_one({'_id': id_})['active'] is False
 
 
 @patch('play.task.application.File')

@@ -18,6 +18,10 @@ class DefaultConfig(object):
     CELERY_ACCEPT_CONTENT = ['bson']
     CELERY_TASK_SERIALIZER = 'bson'
     CELERY_RESULT_SERIALIZER = 'bson'
+    CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
+    CELERY_DEFAULT_EXCHANGE = 'play'
+    CELERY_DEFAULT_ROUTING_KEY = 'play'
+    CELERY_DEFAULT_QUEUE = 'play'
 
     # WTF SETTINGS
     WTF_CSRF_HEADERS = ['X-CSRFToken', 'X-CSRF-Token', 'X-XSRFToken', 'X-XSRF-Token']
