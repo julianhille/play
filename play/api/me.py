@@ -2,7 +2,7 @@ from eve.methods import getitem, patch
 from eve.auth import requires_auth
 from eve.render import send_response
 
-from flask import abort, current_app, request, redirect, url_for
+from flask import abort, current_app, request, redirect, session, url_for
 from flask.ext.login import current_user, login_user, logout_user
 from flask.ext.wtf.csrf import generate_csrf
 
@@ -56,8 +56,7 @@ blueprint = Blueprint('me', __name__, SCHEMA, url_prefix='/me')
 
 @blueprint.after_request
 def add_csrf_token(response):
-    if not request.cookies.get('XSRF-TOKEN'):
-        response.set_cookie('XSRF-TOKEN', generate_csrf())
+    response.set_cookie('XSRF-TOKEN', generate_csrf())
     return response
 
 
@@ -102,12 +101,12 @@ def login():
         user = users.get_user_by_name(
             current_app.data.driver.db.users, form.username.data)
         if user and user.authenticate(form.password.data) and login_user(user):
+            del session['csrf_token']
             return redirect(url_for('me.home'))
         form.username.errors.append('Username/password combination unknown')
     errors = {}
     for field_name, field_errors in form.errors.items():
         errors[field_name] = field_errors
-
     abort(401, errors)
 
 

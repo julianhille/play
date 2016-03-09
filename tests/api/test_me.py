@@ -19,16 +19,18 @@ def test_login_with_wrong_csrf(testapp_api):
     assert '400 BAD REQUEST' in str(context.value)
 
 
-def test_login_with_correct_csrf(testapp_api):
-    with patch('flask.ext.wtf.csrf.validate_csrf', Mock(return_value=True)) as validate:
-        response = testapp_api.post(
-            '/me/login', {'username': 'admin_active', 'password': 'password'},
-            headers=[('X-CSRF-Token', '123123123')])
+def test_login_with_correct_csrf_once(testapp_api):
+    testapp_api.get('/me/login', status=401)
+    csrf_token = testapp_api.cookies['XSRF-TOKEN']
+    response = testapp_api.post(
+        '/me/login', {'username': 'admin_active', 'password': 'password'},
+        headers=[('XSRF-TOKEN', csrf_token)])
+
     assert response.status_code == 302
     followed = response.follow().json_body
+    assert testapp_api.cookies['XSRF-TOKEN'] != csrf_token
     assert followed['_id'] == 'ccff1bee2e21e1560a7dd001'
     assert followed['name'] == 'admin_active'
-    assert validate.call_count == 1
 
 
 def test_login_with_correct_csrf_twice(testapp_api):
@@ -89,19 +91,15 @@ def test_logout_with_correct_csrf(testapp_api):
 def test_get_item_no_auth_without_cookie(testapp_api):
     with patch('play.api.me.generate_csrf') as csrf:
         csrf.return_value = "SOMETOKEN"
-        with raises(AppError) as context:
-            testapp_api.get('/me')
-    assert '401 UNAUTHORIZED' in str(context.value)
+        testapp_api.get('/me', status=401)
     assert csrf.call_count == 1
 
 
 def test_get_item_no_auth_with_cookie(testapp_api):
     with patch('play.api.me.generate_csrf') as csrf:
         csrf.return_value = "SOMETOKEN"
-        with raises(AppError) as context:
-            testapp_api.get('/me', headers=[('Cookie', 'XSRF-TOKEN=ABC;')])
-    assert '401 UNAUTHORIZED' in str(context.value)
-    assert csrf.call_count == 0
+        testapp_api.get('/me', headers=[('Cookie', 'XSRF-TOKEN=ABC;')], status=401)
+    assert csrf.call_count == 1
 
 
 @mark.parametrize('user', ['admin_active', 'user_active', 'admin_user_active'])
